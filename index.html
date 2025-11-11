@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore Link Mailto</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.ico">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Configurazione personalizzata di Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-blue': '#0146bc',
+                        'brand-yellow': '#eddc01',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Stili CSS personalizzati -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Un grigio molto chiaro per lo sfondo */
+        }
+        
+        /* Stile per i campi di input con focus blu */
+        .form-input-field {
+            @apply w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm transition duration-200 ease-in-out;
+            @apply focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent;
+        }
+        
+        /* Stile base per i bottoni */
+        .btn {
+            @apply px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ease-in-out flex items-center justify-center gap-2;
+            @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+        
+        /* Bottone primario (Blu) */
+        .btn-blue {
+            @apply btn bg-brand-blue text-white shadow-sm;
+            @apply hover:bg-blue-800 focus:ring-brand-blue;
+        }
+        
+        /* Bottone secondario (Giallo) */
+        .btn-yellow {
+            @apply btn bg-brand-yellow text-brand-blue font-bold shadow-sm;
+            @apply hover:bg-yellow-400 focus:ring-brand-yellow;
+        }
+        
+        /* Bottone grigio (Reset) */
+        .btn-gray {
+            @apply btn bg-gray-200 text-gray-800 shadow-sm;
+            @apply hover:bg-gray-300 focus:ring-gray-400;
+        }
+
+        /* Nasconde gli input file di default */
+        .import-file-hidden {
+            display: none;
+        }
+
+        /* Stile per il feedback del bottone */
+        .btn-feedback span {
+            transition: all 0.2s;
+        }
+    </style>
+</head>
+<body class="font-inter">
+
+    <!-- Header -->
+    <header class="bg-brand-blue p-6 shadow-md">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold text-brand-yellow">Generatore Link Mailto</h1>
+            <p class="text-white opacity-90 mt-1">Crea e gestisci link 'mailto:' in modo semplice e professionale.</p>
+        </div>
+    </header>
+
+    <!-- Contenuto Principale -->
+    <main class="max-w-4xl mx-auto p-4 md:p-6 z-10 relative">
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden border border-gray-200">
+            
+            <!-- Sezione 1: Form di Composizione -->
+            <div class="p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-brand-blue mb-6 border-l-4 border-brand-yellow pl-3">Componi Messaggio</h2>
+                <form id="mail-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- A: (Destinatario) -->
+                    <div class="md:col-span-2">
+                        <label for="to" class="block text-sm font-medium text-gray-700 mb-2">A: (Destinatario principale)</label>
+                        <input type="email" id="to" name="to" class="form-input-field" placeholder="es. mario.rossi@mail.com">
+                    </div>
+                    
+                    <!-- CC: (Copia Conoscenza) -->
+            <div>
+                <label for="cc" class="block text-sm font-medium text-gray-700 mb-2">CC: (Copia Conoscenza)</label>
+                <textarea id="cc" name="cc" rows="3" class="form-input-field" placeholder="es. luigi.verdi@mail.com, ana.bianchi@mail.com"></textarea>
+                <div class="mt-2">
+                    <input type="file" id="import-cc-csv" accept=".csv" class="import-file-hidden">
+                    <label for="import-cc-csv" id="import-cc-btn" class="btn-blue py-1.5 px-3 text-xs cursor-pointer inline-flex items-center gap-1">
+                        <!-- Icona Upload CSV -->
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                        <span>Importa CSV</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- CCN: (Copia Conoscenza Nascosta) -->
+            <div>
+                <label for="bcc" class="block text-sm font-medium text-gray-700 mb-2">CCN: (Copia Nascosta)</label>
+                <textarea id="bcc" name="bcc" rows="3" class="form-input-field" placeholder="es. capo@mail.com, manager@mail.com"></textarea>
+                <div class="mt-2">
+                    <input type="file" id="import-bcc-csv" accept=".csv" class="import-file-hidden">
+                    <label for="import-bcc-csv" id="import-bcc-btn" class="btn-blue py-1.5 px-3 text-xs cursor-pointer inline-flex items-center gap-1">
+                        <!-- Icona Upload CSV -->
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                        <span>Importa CSV</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Oggetto -->
+                    <div class="md:col-span-2">
+                        <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">Oggetto</label>
+                        <input type="text" id="subject" name="subject" class="form-input-field" placeholder="es. Incontro di progetto">
+                    </div>
+                    
+                    <!-- Corpo del messaggio -->
+                    <div class="md:col-span-2">
+                        <label for="body" class="block text-sm font-medium text-gray-700 mb-2">Corpo del Messaggio</label>
+                        <textarea id="body" name="body" rows="6" class="form-input-field" placeholder="es. Ciao Mario,&#10;ti scrivo per confermare l'incontro..."></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sezione 2: Codice Generato e Azioni Rapide -->
+            <div class="p-6 md:p-8 bg-gray-50 border-t border-gray-200">
+                <h2 class="text-2xl font-bold text-brand-blue mb-6 border-l-4 border-brand-yellow pl-3">Codice e Azioni</h2>
+                
+                <label for="generated-mailto" class="block text-sm font-medium text-gray-700 mb-2">Link Mailto Generato</label>
+                <textarea id="generated-mailto" rows="3" class="w-full p-3 bg-gray-200 border border-gray-300 rounded-lg font-mono text-sm text-gray-700" readonly></textarea>
+                
+                <div class="flex flex-wrap gap-4 mt-4">
+                    <!-- Bottone Copia -->
+                    <button id="copy-btn" class="btn-blue">
+                        <!-- Icona Copia (SVG inline) -->
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5-.124m7.5 10.375h3.375c.621 0 1.125-.504 1.125-1.125V7.875c0-.621-.504-1.125-1.125-1.125h-3.375m0 0c1.125 0 2.25 0 3.375 0m-3.375 0c0-1.125 0-2.25 0-3.375m0 3.375c-1.125 0-2.25 0-3.375 0m3.375 0c0 1.125 0 2.25 0 3.375M9 11.25l3-3m0 0l3 3m-3-3v7.5" /></svg>
+                        <span>Copia Link</span>
+                    </button>
+                    <!-- Bottone Apri -->
+                    <button id="open-btn" class="btn-blue">
+                        <!-- Icona Apri (SVG inline) -->
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                        <span>Apri in Email</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sezione 3: Gestione Dati -->
+            <div class="p-6 md:p-8 border-t border-gray-200">
+                <h2 class="text-2xl font-bold text-brand-blue mb-6 border-l-4 border-brand-yellow pl-3">Gestione Dati</h2>
+                <div class="flex flex-wrap gap-4">
+                    
+                    <!-- Bottone Salva -->
+                    <button id="save-btn" class="btn-yellow">
+                        <!-- Icona Salva (SVG inline) -->
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                        <span>Salva nel Browser</span>
+                    </button>
+
+                    <!-- Bottone Esporta -->
+                    <button id="export-btn" class="btn-yellow">
+                        <!-- Icona Esporta (SVG inline) -->
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                        <span>Esporta JSON</span>
+                    </button>
+
+                    <!-- Bottone Importa (Label per input file) -->
+                    <input type="file" id="import-file" accept=".json" class="import-file-hidden">
+                    <label for="import-file" id="import-btn" class="btn-yellow cursor-pointer">
+                        <!-- Icona Importa (SVG inline) -->
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                        <span>Importa JSON</span>
+                    </label>
+
+                    <!-- Bottone Reset -->
+                    <button id="reset-btn" class="btn-gray ml-auto">
+                        <!-- Icona Reset (SVG inline) -->
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+                        <span>Reset Campi</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6">
+        <p class="text-sm text-gray-500">App creata con HTML, Tailwind CSS e JavaScript.</p>
+    </footer>
+
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Selettori Elementi DOM
+            const toInput = document.getElementById('to');
+            const ccInput = document.getElementById('cc');
+            const bccInput = document.getElementById('bcc');
+            const subjectInput = document.getElementById('subject');
+            const bodyInput = document.getElementById('body');
+            const mailForm = document.getElementById('mail-form');
+            const outputTextarea = document.getElementById('generated-mailto');
+            
+            const copyBtn = document.getElementById('copy-btn');
+            const openBtn = document.getElementById('open-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const exportBtn = document.getElementById('export-btn');
+            const importFile = document.getElementById('import-file');
+            const importBtn = document.getElementById('import-btn'); // Questa è la label
+            const resetBtn = document.getElementById('reset-btn');
+            
+            // Selettori per Importazione CSV
+            const importCcCsv = document.getElementById('import-cc-csv');
+            const importCcBtn = document.getElementById('import-cc-btn');
+            const importBccCsv = document.getElementById('import-bcc-csv');
+            const importBccBtn = document.getElementById('import-bcc-btn');
+
+            const STORAGE_KEY = 'mailtoGeneratorData';
+
+            // --- FUNZIONI PRINCIPALI ---
+
+            /**
+             * Genera il link mailto e aggiorna l'textarea
+             */
+            function generateMailto() {
+                const to = toInput.value.trim();
+                const cc = ccInput.value.trim();
+                const bcc = bccInput.value.trim();
+                const subject = subjectInput.value.trim();
+                const body = bodyInput.value.trim();
+
+                if (!to) {
+                    outputTextarea.value = '';
+                    return;
+                }
+
+                let mailto = `mailto:${encodeURIComponent(to)}`;
+                const params = new URLSearchParams();
+
+                if (cc) params.set('cc', cc);
+                if (bcc) params.set('bcc', bcc);
+                if (subject) params.set('subject', subject);
+                if (body) params.set('body', body);
+
+                const paramString = params.toString();
+                if (paramString) {
+                    mailto += `?${paramString}`;
+                }
+
+                outputTextarea.value = mailto;
+            }
+
+            /**
+             * Mostra un feedback testuale temporaneo su un bottone
+             * @param {HTMLElement} button - Il bottone (o la label)
+             * @param {string} message - Il messaggio da mostrare
+             */
+            function showButtonFeedback(button, message) {
+                const span = button.querySelector('span');
+                if (!span) return; // Sicurezza
+
+                const originalText = span.textContent;
+                button.disabled = true;
+                span.textContent = message;
+
+                // Aggiungiamo un'ombreggiatura più forte per il feedback
+                button.classList.add('ring-2', 'ring-offset-2', 'ring-brand-blue');
+
+                setTimeout(() => {
+                    span.textContent = originalText;
+                    button.disabled = false;
+                    button.classList.remove('ring-2', 'ring-offset-2', 'ring-brand-blue');
+                }, 2000);
+            }
+
+            /**
+             * Processa un file CSV e appende le email a un campo textarea
+             * @param {File} file - Il file CSV
+             * @param {HTMLTextAreaElement} textarea - Il campo a cui appendere
+             * @param {HTMLElement} button - Il bottone per il feedback
+             */
+            function parseCsvAndAppend(file, textarea, button) {
+                if (!file || (file.type !== 'text/csv' && !file.name.endsWith('.csv'))) {
+                    showButtonFeedback(button, 'File non valido');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const csvText = event.target.result;
+                        
+                        // Estrae email dal CSV. 
+                        // Ipotesi: una email per riga, o separate da virgola/punto e virgola/spazio/tab
+                        const emails = csvText
+                            .split(/[\n,; \t]+/) // Divide per righe E comuni delimitatori
+                            .map(e => e.trim()) // Pulisce spazi
+                            .filter(e => e.includes('@')); // Filtra solo stringhe che sembrano email
+
+                        if (emails.length === 0) {
+                            showButtonFeedback(button, 'Nessuna email trovata');
+                            return;
+                        }
+
+                        const newEmails = emails.join(', ');
+                        const existingEmails = textarea.value.trim();
+                        
+                        if (existingEmails) {
+                            textarea.value = existingEmails + ', ' + newEmails;
+                        } else {
+                            textarea.value = newEmails;
+                        }
+                        
+                        generateMailto(); // Aggiorna l'output
+                        showButtonFeedback(button, 'Importato!');
+
+                    } catch (err) {
+                        console.error("Errore durante l'importazione CSV:", err);
+                        showButtonFeedback(button, 'Errore lettura');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            /**
+              * Raccoglie i dati del form in un oggetto
+              * @returns {object} Dati del form
+              */
+            function getFormData() {
+                return {
+                    to: toInput.value,
+                    cc: ccInput.value,
+                    bcc: bccInput.value,
+                    subject: subjectInput.value,
+                    body: bodyInput.value,
+                };
+            }
+
+            /**
+             * Imposta i campi del form da un oggetto
+             * @param {object} data - Dati da impostare
+             */
+            function setFormData(data) {
+                toInput.value = data.to || '';
+                ccInput.value = data.cc || '';
+                bccInput.value = data.bcc || '';
+                subjectInput.value = data.subject || '';
+                bodyInput.value = data.body || '';
+                generateMailto(); // Aggiorna l'output
+            }
+
+            /**
+             * Carica i dati salvati dal localStorage
+             */
+            function loadFromStorage() {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (data) {
+                    try {
+                        setFormData(JSON.parse(data));
+                    } catch (e) {
+                        console.error("Errore nel parsing dei dati salvati:", e);
+                        localStorage.removeItem(STORAGE_KEY);
+                    }
+                } else {
+                    // Se non ci sono dati, genera comunque (per pulire l'output)
+                    generateMailto();
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+
+            // Aggiorna live mentre si digita
+            mailForm.addEventListener('input', generateMailto);
+
+            // Bottone: Copia
+            copyBtn.addEventListener('click', () => {
+                if (!outputTextarea.value) {
+                    showButtonFeedback(copyBtn, 'Nulla da copiare');
+                    return;
+                }
+                
+                // Usiamo document.execCommand per massima compatibilità (anche in iframe)
+                outputTextarea.select();
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges(); // Deseleziona
+                
+                showButtonFeedback(copyBtn, 'Copiato!');
+            });
+
+            // Bottone: Apri
+            openBtn.addEventListener('click', () => {
+                const mailtoLink = outputTextarea.value;
+                if (!mailtoLink || mailtoLink === 'mailto:') {
+                    showButtonFeedback(openBtn, 'Destinatario vuoto');
+                    return;
+                }
+                window.location.href = mailtoLink;
+                showButtonFeedback(openBtn, 'Apro...');
+            });
+
+            // Bottone: Salva nel Browser
+            saveBtn.addEventListener('click', () => {
+                const data = getFormData();
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                showButtonFeedback(saveBtn, 'Salvato!');
+            });
+
+            // Bottone: Esporta JSON
+            exportBtn.addEventListener('click', () => {
+                const data = getFormData();
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'mailto-config.json';
+                document.body.appendChild(a);
+                a.click();
+                
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showButtonFeedback(exportBtn, 'Esportato!');
+            });
+
+            // Bottone: Importa JSON (sul change dell'input file)
+            importFile.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        setFormData(data);
+                        showButtonFeedback(importBtn, 'Importato!');
+                    } catch (err) {
+                        console.error("Errore durante l'importazione:", err);
+                        showButtonFeedback(importBtn, 'Errore File!');
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = null; // Permette di ricaricare lo stesso file
+            });
+
+            // Bottone: Importa CSV per CC
+            importCcCsv.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    parseCsvAndAppend(file, ccInput, importCcBtn);
+                }
+                e.target.value = null; // Resetta input
+            });
+
+            // Bottone: Importa CSV per CCN
+            importBccCsv.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    parseCsvAndAppend(file, bccInput, importBccBtn);
+                }
+                e.target.value = null; // Resetta input
+            });
+
+            // Bottone: Reset
+            resetBtn.addEventListener('click', () => {
+                if (confirm('Sei sicuro di voler resettare tutti i campi e cancellare i dati salvati?')) {
+                    setFormData({}); // Resetta i campi
+                    localStorage.removeItem(STORAGE_KEY); // Cancella dal browser
+                    showButtonFeedback(resetBtn, 'Resettato!');
+                }
+            });
+
+            // Caricamento iniziale: Carica i dati salvati all'avvio
+            loadFromStorage();
+
+        });
+    </script>
+
+</body>
+</html>

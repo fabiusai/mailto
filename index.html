@@ -626,9 +626,29 @@
                 const blob = new Blob([json], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 
+                // --- INIZIO MODIFICA: Naming file dinamico ---
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0'); // Mesi sono 0-indicizzati
+                const day = String(now.getDate()).padStart(2, '0');
+                const datePrefix = `${year}_${month}_${day}`;
+
+                let subjectText = subjectInput.value.trim();
+                if (!subjectText) {
+                    subjectText = 'senza_oggetto';
+                }
+                
+                // Sostituisce spazi con underscore e rimuove caratteri non validi
+                const safeSubject = subjectText
+                    .replace(/\s+/g, '_') // Sostituisce spazi (anche multipli) con _
+                    .replace(/[\\/:*?"<>|.]/g, ''); // Rimuove caratteri non validi per i nomi file (incluso il punto)
+
+                const fileName = `${datePrefix}_${safeSubject}.json`;
+                // --- FINE MODIFICA ---
+                
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'mailto-config.json';
+                a.download = fileName; // Usa il nome file dinamico
                 document.body.appendChild(a);
                 a.click();
                 

@@ -3,714 +3,642 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generatore Link Mailto</title>
+    <title>Mail Manager</title>
     
-    <!-- Favicon -->
-    <link rel="icon" href="favicon.ico">
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Font Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Configurazione personalizzata di Tailwind -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'brand-blue': '#0146bc',
-                        'brand-yellow': '#eddc01',
+                        'mac-bg': '#f5f5f7',
+                        'mac-card': '#ffffff',
+                        'mac-blue': '#007aff',
+                        'mac-blue-hover': '#0062cc',
+                        'mac-text': '#1d1d1f',
+                        'mac-muted': '#86868b',
+                        'mac-border': '#d2d2d7',
+                        'mac-danger': '#ff3b30'
                     },
                     fontFamily: {
-                        inter: ['Inter', 'sans-serif'],
+                        inter: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
     
-    <!-- Stili CSS personalizzati -->
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f5f5f7; color: #1d1d1f; }
         
-        /* MODIFICA 1 e 3: Stile per i campi di input con bordo grigio chiaro e focus blu */
-        .form-input-field {
-            width: 100%; /* MODIFICA 1: Sempre piena larghezza */
-            padding: 0.75rem 1rem;
-            border: 1px solid #d1d5db; /* Bordo grigio chiaro */
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease-in-out;
+        /* Scrollbar in stile Mac */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* Controlli Form */
+        .mac-input {
+            width: 100%; padding: 0.5rem 0.75rem; background: #ffffff;
+            border: 1px solid #d2d2d7; border-radius: 8px; font-size: 0.875rem;
+            transition: all 0.2s ease; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
+        .mac-input:focus { border-color: #007aff; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2); }
         
-        .form-input-field:focus {
-            outline: none;
-            border: 2px solid #0146bc; /* MODIFICA 3: Bordo blu da 2px al focus */
-            box-shadow: 0 0 0 3px rgba(1, 70, 188, 0.1);
+        /* Bottoni */
+        .mac-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+            padding: 0.4rem 0.8rem; font-size: 0.875rem; font-weight: 500; border-radius: 6px;
+            transition: all 0.15s ease; cursor: pointer; border: 1px solid transparent;
         }
-        
-        /* Stile base per i bottoni */
-        .btn {
-            padding: 0.625rem 1.25rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s ease-in-out;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        .btn:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px white, 0 0 0 4px currentColor;
-        }
-        
-        /* Bottone primario (Blu) */
-        .btn-blue {
-            background-color: #0146bc;
-            color: white;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
-        
-        .btn-blue:hover {
-            background-color: #013399;
-        }
-        
-        /* Bottone secondario (Giallo) */
-        .btn-yellow {
-            background-color: #eddc01;
-            color: #0146bc;
-            font-weight: 700;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
-        
-        .btn-yellow:hover {
-            background-color: #d4c600;
-        }
-        
-        /* Bottone grigio (Reset) */
-        .btn-gray {
-            background-color: #e5e7eb;
-            color: #1f2937;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
+        .mac-btn-primary { background: #007aff; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .mac-btn-primary:hover { background: #0062cc; }
+        .mac-btn-secondary { background: #ffffff; color: #1d1d1f; border-color: #d2d2d7; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .mac-btn-secondary:hover { background: #f5f5f7; }
+        .mac-btn-danger { background: #ff3b30; color: white; }
+        .mac-btn-danger:hover { background: #d32f2f; }
 
-        .btn-gray:hover {
-            background-color: #d1d5db;
-        }
+        /* Tabelle e Drag/Drop */
+        th { cursor: pointer; user-select: none; }
+        th:hover { background-color: #f0f0f0; }
+        tr.dragging { opacity: 0.5; background-color: #e5f1ff; }
+        tr.drag-over { border-top: 2px solid #007aff; }
 
-        /* Nasconde gli input file di default */
-        .import-file-hidden {
-            display: none;
-        }
-
-        /* MODIFICA 4: Stile per il container dei destinatari multipli */
-        .recipient-row {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .recipient-input {
-            flex: 1;
-        }
-
-        .btn-add, .btn-remove {
-            flex-shrink: 0;
-            width: 2.5rem;
-            height: 2.5rem;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-        }
-
-        .btn-add {
-            background-color: #eddc01;
-            color: #0146bc;
-        }
-
-        .btn-add:hover {
-            background-color: #d4c600;
-        }
-
-        .btn-remove {
-            background-color: #ef4444;
-            color: white;
-        }
-
-        .btn-remove:hover {
-            background-color: #dc2626;
+        /* Modali */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
         }
     </style>
 </head>
-<body class="font-inter">
+<body class="h-screen flex flex-col overflow-hidden">
 
-    <!-- Header -->
-    <header class="bg-brand-blue px-4 md:px-6 py-6 shadow-md">
-        <h1 class="text-3xl font-bold text-brand-yellow">Generatore Link Mailto</h1>
-        <p class="text-white opacity-90 mt-1">Crea e gestisci link 'mailto:' in modo semplice e professionale.</p>
+    <header class="bg-mac-card border-b border-mac-border px-6 py-3 flex justify-between items-center z-10">
+        <div class="flex items-center gap-2">
+            <svg class="w-6 h-6 text-mac-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/></svg>
+            <h1 class="text-lg font-semibold text-mac-text">Mail Manager</h1>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="exportExcel()" class="mac-btn mac-btn-secondary text-sm">Esporta Excel</button>
+            <button onclick="exportData()" class="mac-btn mac-btn-secondary text-sm">Esporta JSON</button>
+            <label class="mac-btn mac-btn-secondary text-sm cursor-pointer mb-0">
+                Importa JSON <input type="file" id="import-json" class="hidden" accept=".json">
+            </label>
+        </div>
     </header>
 
-    <!-- Contenuto Principale -->
-    <main class="p-4 md:p-6 z-10 relative">
-        <div class="bg-white rounded-lg shadow-xl overflow-hidden border border-gray-200">
+    <div class="flex flex-1 overflow-hidden">
+        
+        <main class="flex-1 flex flex-col h-full bg-mac-bg p-4 overflow-hidden gap-4">
             
-            <!-- Sezione 1: Form di Composizione -->
-            <div class="p-6 md:p-8">
-                <h2 class="text-2xl font-bold text-brand-blue mb-6 border-l-4 border-brand-yellow pl-3">Componi Messaggio</h2>
-                <form id="mail-form" class="grid grid-cols-1 gap-6">
-                    
-                    <!-- A: (Destinatario) -->
-                    <div>
-                        <label for="to" class="block text-sm font-medium text-gray-700 mb-2">A: (Destinatario principale)</label>
-                        <input type="email" id="to" name="to" class="form-input-field" placeholder="es. mario.rossi@mail.com, luigi.verdi@mail.com">
-                    </div>
-                    
-                    <!-- CC: (Copia Conoscenza) - MODIFICA 4 -->
-                    <div> 
-                        <label class="block text-sm font-medium text-gray-700 mb-2">CC: (Copia Conoscenza)</label>
-                        <div id="cc-container"></div>
-                        <div class="mt-3 flex justify-end">
-                            <div>
-                                <input type="file" id="import-cc-csv" accept=".csv" class="import-file-hidden">
-                                <label for="import-cc-csv" id="import-cc-btn" class="btn btn-blue py-1.5 px-3 text-xs cursor-pointer inline-flex items-center gap-1">
-                                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
-                                    <span>Importa CSV</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-            
-                    <!-- CCN: (Copia Conoscenza Nascosta) - MODIFICA 4 -->
-                    <div> 
-                        <label class="block text-sm font-medium text-gray-700 mb-2">CCN: (Copia Nascosta)</label>
-                        <div id="bcc-container"></div>
-                        <div class="mt-3 flex justify-end">
-                            <div>
-                                <input type="file" id="import-bcc-csv" accept=".csv" class="import-file-hidden">
-                                <label for="import-bcc-csv" id="import-bcc-btn" class="btn btn-blue py-1.5 px-3 text-xs cursor-pointer inline-flex items-center gap-1">
-                                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
-                                    <span>Importa CSV</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-            
-                    <!-- Oggetto -->
-                    <div>
-                        <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">Oggetto</label>
-                        <input type="text" id="subject" name="subject" class="form-input-field" placeholder="es. Incontro di progetto">
-                    </div>
-                    
-                    <!-- Corpo del messaggio -->
-                    <div>
-                        <label for="body" class="block text-sm font-medium text-gray-700 mb-2">Corpo del Messaggio</label>
-                        <textarea id="body" name="body" rows="6" class="form-input-field" placeholder="es. Ciao Mario,&#10;ti scrivo per confermare l'incontro..."></textarea>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Sezione 2: Codice Generato e Azioni Rapide -->
-            <div class="p-6 md:p-8 bg-gray-50 border-t border-gray-200">
-                <h2 class="text-2xl font-bold text-brand-blue mb-6 border-l-4 border-brand-yellow pl-3">Codice e Azioni</h2>
-                
-                <label for="generated-mailto" class="block text-sm font-medium text-gray-700 mb-2">Link Mailto Generato</label>
-                <textarea id="generated-mailto" rows="3" class="w-full p-3 bg-gray-200 border border-gray-300 rounded-lg font-mono text-sm text-gray-700" readonly></textarea>
-                
-                <div class="flex flex-wrap gap-4 mt-4">
-                    <!-- Bottone Copia -->
-                    <button id="copy-btn" class="btn btn-blue">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 0 011.5-.124m7.5 10.375h3.375c.621 0 1.125-.504 1.125-1.125V7.875c0-.621-.504-1.125-1.125-1.125h-3.375m0 0c1.125 0 2.25 0 3.375 0m-3.375 0c0-1.125 0-2.25 0-3.375m0 3.375c-1.125 0-2.25 0-3.375 0m3.375 0c0 1.125 0 2.25 0 3.375M9 11.25l3-3m0 0l3 3m-3-3v7.5" /></svg>
-                        <span>Copia Link</span>
-                    </button>
-                    <!-- Bottone Apri -->
-                    <button id="open-btn" class="btn btn-blue">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
-                        <span>Apri in Email</span>
-                    </button>
+            <div class="flex justify-between items-center px-2">
+                <div class="flex gap-1 bg-gray-200/60 p-1 rounded-lg">
+                    <button onclick="switchTab('active')" id="tab-active" class="px-4 py-1 text-sm font-medium rounded-md bg-white shadow-sm transition-all">Attivi</button>
+                    <button onclick="switchTab('removed')" id="tab-removed" class="px-4 py-1 text-sm font-medium rounded-md text-mac-muted hover:text-mac-text transition-all">Cestinati</button>
+                </div>
+                <div class="flex gap-3 items-center">
+                    <input type="search" id="search-input" placeholder="Cerca ovunque..." class="mac-input w-64 text-sm" onkeyup="renderAllTables()">
+                    <button onclick="openNewContactModal()" class="mac-btn mac-btn-primary">+ Nuovo</button>
+                    <button onclick="openModal('excel-modal')" class="mac-btn mac-btn-secondary">Incolla da Excel</button>
                 </div>
             </div>
 
-            <!-- Sezione 3: Gestione Dati -->
-            <div class="p-6 md:p-8 border-t border-gray-200">
-                <h2 class="text-2xl font-bold text-brand-blue mb-6 border-l-4 border-brand-yellow pl-3">Gestione Dati</h2>
-                <div class="flex flex-wrap gap-4">
-                    
-                    <!-- Bottone Salva -->
-                    <button id="save-btn" class="btn btn-yellow">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                        <span>Salva nel Browser</span>
-                    </button>
+            <div class="flex-1 overflow-y-auto space-y-6 pr-2">
+                
+                <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
+                    <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
+                        <span class="text-xs font-bold text-mac-muted uppercase">A: (Destinatari Principali)</span>
+                        <span id="count-to" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
+                            <tr>
+                                <th class="px-4 py-2 w-[5%]"></th>
+                                <th class="px-4 py-2 w-[15%]" onclick="setSort('to', 'firstName')">Nome</th>
+                                <th class="px-4 py-2 w-[15%]" onclick="setSort('to', 'lastName')">Cognome</th>
+                                <th class="px-4 py-2 w-[25%]" onclick="setSort('to', 'email')">Email</th>
+                                <th class="px-4 py-2 w-[25%]" onclick="setSort('to', 'company')">Società/Funzione</th>
+                                <th class="px-4 py-2 w-[15%] text-right">Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-to" class="divide-y divide-gray-100 min-h-[50px]" 
+                               ondragover="allowDrop(event)" ondrop="drop(event, 'to')"></tbody>
+                    </table>
+                </div>
 
-                    <!-- Bottone Esporta -->
-                    <button id="export-btn" class="btn btn-yellow">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
-                        <span>Esporta JSON</span>
-                    </button>
+                <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
+                    <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
+                        <span class="text-xs font-bold text-mac-muted uppercase">CC: (Copia Conoscenza)</span>
+                        <span id="count-cc" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
+                            <tr>
+                                <th class="px-4 py-2 w-[5%]"></th>
+                                <th class="px-4 py-2 w-[15%]" onclick="setSort('cc', 'firstName')">Nome</th>
+                                <th class="px-4 py-2 w-[15%]" onclick="setSort('cc', 'lastName')">Cognome</th>
+                                <th class="px-4 py-2 w-[25%]" onclick="setSort('cc', 'email')">Email</th>
+                                <th class="px-4 py-2 w-[25%]" onclick="setSort('cc', 'company')">Società/Funzione</th>
+                                <th class="px-4 py-2 w-[15%] text-right">Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-cc" class="divide-y divide-gray-100 min-h-[50px]"
+                               ondragover="allowDrop(event)" ondrop="drop(event, 'cc')"></tbody>
+                    </table>
+                </div>
 
-                    <!-- Bottone Importa (Label per input file) -->
-                    <input type="file" id="import-file" accept=".json" class="import-file-hidden">
-                    <label for="import-file" id="import-btn" class="btn btn-yellow cursor-pointer">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                        <span>Importa JSON</span>
-                    </label>
+                <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
+                    <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
+                        <span class="text-xs font-bold text-mac-muted uppercase">BCC: (Copia Nascosta)</span>
+                        <span id="count-bcc" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
+                            <tr>
+                                <th class="px-4 py-2 w-[5%]"></th>
+                                <th class="px-4 py-2 w-[15%]" onclick="setSort('bcc', 'firstName')">Nome</th>
+                                <th class="px-4 py-2 w-[15%]" onclick="setSort('bcc', 'lastName')">Cognome</th>
+                                <th class="px-4 py-2 w-[25%]" onclick="setSort('bcc', 'email')">Email</th>
+                                <th class="px-4 py-2 w-[25%]" onclick="setSort('bcc', 'company')">Società/Funzione</th>
+                                <th class="px-4 py-2 w-[15%] text-right">Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-bcc" class="divide-y divide-gray-100 min-h-[50px]"
+                               ondragover="allowDrop(event)" ondrop="drop(event, 'bcc')"></tbody>
+                    </table>
+                </div>
+            </div>
 
-                    <!-- Bottone Reset -->
-                    <button id="reset-btn" class="btn btn-gray ml-auto">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
-                        <span>Reset Campi</span>
-                    </button>
+            <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm p-4 h-48 shrink-0 flex flex-col gap-3">
+                <div class="flex gap-4">
+                    <input type="text" id="mail-subject" class="mac-input w-1/3" placeholder="Oggetto..." oninput="updateMailtoLink()">
+                    <textarea id="mail-body" rows="1" class="mac-input w-2/3 resize-none" placeholder="Messaggio..." oninput="updateMailtoLink()"></textarea>
+                </div>
+                <div class="flex-1 bg-mac-bg border border-mac-border rounded-lg p-2 flex flex-col justify-between">
+                    <textarea id="mailto-output" readonly class="w-full bg-transparent border-none outline-none text-[10px] text-mac-muted resize-none font-mono flex-1"></textarea>
+                    <div class="flex justify-end gap-2 mt-2">
+                        <button onclick="copyLink()" id="btn-copy" class="mac-btn mac-btn-secondary text-[10px] py-1 px-2">Copia Link</button>
+                        <button onclick="openMail()" id="btn-open" class="mac-btn mac-btn-primary text-[10px] py-1 px-2">Apri Client Email</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="add-modal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+        <div class="bg-mac-card w-full max-w-md rounded-xl shadow-2xl border border-mac-border overflow-hidden">
+            <div class="px-5 py-4 border-b border-mac-border bg-gray-50/50">
+                <h3 id="modal-title" class="font-semibold text-mac-text">Nuovo Contatto</h3>
+            </div>
+            <div class="p-5 space-y-4">
+                <input type="hidden" id="form-id">
+                <div class="flex gap-4">
+                    <div class="w-1/2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nome</label>
+                        <input type="text" id="form-name" class="mac-input">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Cognome</label>
+                        <input type="text" id="form-surname" class="mac-input">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Email *</label>
+                    <input type="email" id="form-email" class="mac-input" required>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-2/3">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Società / Funzione</label>
+                        <input type="text" id="form-company" class="mac-input">
+                    </div>
+                    <div class="w-1/3">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Destinazione</label>
+                        <select id="form-type" class="mac-input bg-white">
+                            <option value="to">A (To)</option>
+                            <option value="cc">CC</option>
+                            <option value="bcc" selected>CCN (Nascosta)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="px-5 py-4 bg-gray-50/50 border-t border-mac-border flex justify-end gap-2">
+                <button onclick="closeModal('add-modal')" class="mac-btn mac-btn-secondary">Annulla</button>
+                <button onclick="saveContact()" class="mac-btn mac-btn-primary">Salva Contatto</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="excel-modal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+        <div class="bg-mac-card w-full max-w-2xl rounded-xl shadow-2xl border border-mac-border overflow-hidden">
+            <div class="px-5 py-4 border-b border-mac-border bg-gray-50/50">
+                <h3 class="font-semibold text-mac-text">Importa da Excel / Fogli Google</h3>
+                <p class="text-xs text-mac-muted mt-1">Copia le celle dal foglio e incollale qui sotto. <br>Ordine colonne consigliato: <b>Nome | Cognome | Email | Società/Funzione</b></p>
+            </div>
+            <div class="p-5">
+                <textarea id="excel-paste-area" rows="8" class="mac-input font-mono text-sm" placeholder="Incolla qui le celle..."></textarea>
+            </div>
+            <div class="px-5 py-4 bg-gray-50/50 border-t border-mac-border flex justify-between items-center">
+                <div class="text-xs text-mac-muted">I duplicati (stessa email) verranno ignorati.</div>
+                <div class="flex gap-2">
+                    <button onclick="closeModal('excel-modal')" class="mac-btn mac-btn-secondary">Annulla</button>
+                    <button onclick="processExcel()" class="mac-btn mac-btn-primary">Importa Dati</button>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <footer class="text-center py-6">
-        <p class="text-sm text-gray-500">App creata con HTML, Tailwind CSS e JavaScript.</p>
-    </footer>
-
-    <!-- JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // --- STATO APPLICAZIONE ---
+        const STORAGE_KEY = 'macMailManagerDB';
+        let db = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        let currentTab = 'active';
+        
+        // Sorting status. Se null, significa che l'utente ha fatto drag&drop e vogliamo preservare l'ordine manuale
+        let sorting = {
+            to: { col: null, asc: true },
+            cc: { col: null, asc: true },
+            bcc: { col: null, asc: true }
+        };
 
-            // Selettori Elementi DOM
-            const toInput = document.getElementById('to');
-            const ccContainer = document.getElementById('cc-container');
-            const bccContainer = document.getElementById('bcc-container');
-            const subjectInput = document.getElementById('subject');
-            const bodyInput = document.getElementById('body');
-            const mailForm = document.getElementById('mail-form');
-            const outputTextarea = document.getElementById('generated-mailto');
+        window.onload = () => {
+            document.getElementById('import-json').addEventListener('change', importData);
+            renderAllTables();
+        };
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+            updateMailtoLink();
+        }
+
+        // --- GESTIONE TABELLE E RENDER ---
+        function renderAllTables() {
+            renderSection('to');
+            renderSection('cc');
+            renderSection('bcc');
+            updateMailtoLink();
+        }
+
+        function renderSection(type) {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const tbody = document.getElementById(`body-${type}`);
+            const countEl = document.getElementById(`count-${type}`);
             
-            const copyBtn = document.getElementById('copy-btn');
-            const openBtn = document.getElementById('open-btn');
-            const saveBtn = document.getElementById('save-btn');
-            const exportBtn = document.getElementById('export-btn');
-            const importFile = document.getElementById('import-file');
-            const importBtn = document.getElementById('import-btn');
-            const resetBtn = document.getElementById('reset-btn');
-            
-            const importCcCsv = document.getElementById('import-cc-csv');
-            const importCcBtn = document.getElementById('import-cc-btn');
-            const importBccCsv = document.getElementById('import-bcc-csv');
-            const importBccBtn = document.getElementById('import-bcc-btn');
-
-            const STORAGE_KEY = 'mailtoGeneratorData';
-
-            // MODIFICA 4: Array per gestire i destinatari multipli
-            let ccRecipients = [''];
-            let bccRecipients = [''];
-
-            // --- FUNZIONI PER GESTIONE DESTINATARI MULTIPLI ---
-
-            /**
-             * Crea una riga di input per un destinatario
-             */
-            function createRecipientRow(value, index, type) {
-                const row = document.createElement('div');
-                row.className = 'recipient-row';
-                
-                const input = document.createElement('input');
-                input.type = 'email';
-                input.className = 'form-input-field recipient-input';
-                input.placeholder = 'es. mario.rossi@mail.com';
-                input.value = value;
-                input.dataset.index = index;
-                input.dataset.type = type;
-                
-                input.addEventListener('input', (e) => {
-                    if (type === 'cc') {
-                        ccRecipients[index] = e.target.value;
-                    } else {
-                        bccRecipients[index] = e.target.value;
-                    }
-                    generateMailto();
-                });
-                
-                const addBtn = document.createElement('button');
-                addBtn.type = 'button';
-                addBtn.className = 'btn-add';
-                addBtn.innerHTML = '<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>';
-                addBtn.title = 'Aggiungi destinatario';
-                addBtn.addEventListener('click', () => addRecipient(type));
-                
-                row.appendChild(input);
-                row.appendChild(addBtn);
-                
-                // Aggiungi bottone rimuovi se non è l'unico campo
-                const recipients = type === 'cc' ? ccRecipients : bccRecipients;
-                if (recipients.length > 1) {
-                    const removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.className = 'btn-remove';
-                    removeBtn.innerHTML = '<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>';
-                    removeBtn.title = 'Rimuovi destinatario';
-                    removeBtn.addEventListener('click', () => removeRecipient(index, type));
-                    row.appendChild(removeBtn);
-                }
-                
-                return row;
+            // Estrazione e Filtro
+            let data = db.filter(c => c.type === type && c.status === currentTab);
+            if (query) {
+                data = data.filter(c => 
+                    (c.firstName || '').toLowerCase().includes(query) || 
+                    (c.lastName || '').toLowerCase().includes(query) || 
+                    (c.email || '').toLowerCase().includes(query) ||
+                    (c.company || '').toLowerCase().includes(query)
+                );
             }
 
-            /**
-             * Aggiunge un nuovo destinatario
-             */
-            function addRecipient(type) {
-                if (type === 'cc') {
-                    ccRecipients.push('');
-                    renderRecipients('cc');
-                } else {
-                    bccRecipients.push('');
-                    renderRecipients('bcc');
-                }
-            }
-
-            /**
-             * Rimuove un destinatario
-             */
-            function removeRecipient(index, type) {
-                if (type === 'cc') {
-                    ccRecipients.splice(index, 1);
-                    if (ccRecipients.length === 0) ccRecipients = [''];
-                    renderRecipients('cc');
-                } else {
-                    bccRecipients.splice(index, 1);
-                    if (bccRecipients.length === 0) bccRecipients = [''];
-                    renderRecipients('bcc');
-                }
-                generateMailto();
-            }
-
-            /**
-             * Renderizza tutti i destinatari di un tipo
-             */
-            function renderRecipients(type) {
-                const container = type === 'cc' ? ccContainer : bccContainer;
-                const recipients = type === 'cc' ? ccRecipients : bccRecipients;
-                
-                container.innerHTML = '';
-                recipients.forEach((value, index) => {
-                    container.appendChild(createRecipientRow(value, index, type));
+            // Ordinamento (Solo se una colonna è attiva, altrimenti usa l'ordine del DB stabilito dal drag&drop)
+            const s = sorting[type];
+            if (s.col) {
+                data.sort((a, b) => {
+                    let valA = (a[s.col] || '').toLowerCase();
+                    let valB = (b[s.col] || '').toLowerCase();
+                    return s.asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
                 });
             }
 
-            // --- FUNZIONI PRINCIPALI ---
+            countEl.textContent = data.length;
+            tbody.innerHTML = '';
 
-            /**
-             * Genera il link mailto e aggiorna l'textarea
-             */
-            function generateMailto() {
-                const to = toInput.value.trim();
+            data.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50/30 cursor-move transition-colors group";
+                tr.draggable = true;
+                tr.dataset.id = c.id; // Necessario per il riordino
                 
-                const cc = ccRecipients.filter(e => e.trim()).join(',');
-                const bcc = bccRecipients.filter(e => e.trim()).join(',');
-                
-                const subject = subjectInput.value.trim();
-                const body = bodyInput.value.trim();
+                // Eventi Drag & Drop
+                tr.ondragstart = (e) => {
+                    e.dataTransfer.setData("text/plain", c.id);
+                    setTimeout(() => tr.classList.add('dragging'), 0);
+                };
+                tr.ondragend = () => tr.classList.remove('dragging');
+                tr.ondragover = (e) => {
+                    e.preventDefault();
+                    tr.classList.add('drag-over');
+                };
+                tr.ondragleave = () => tr.classList.remove('drag-over');
 
-                if (!to) {
-                    outputTextarea.value = '';
-                    return;
-                }
+                // Abilita apertura modale con doppio click sulla riga
+                tr.ondblclick = () => { if(currentTab === 'active') editContact(c.id); };
 
-                // FIX 1: Rimosso encodeURIComponent(to) per supportare email multiple
-                let mailto = `mailto:${to}`;
-                const params = new URLSearchParams();
-
-                if (cc) params.set('cc', cc);
-                if (bcc) params.set('bcc', bcc);
-                if (subject) params.set('subject', subject);
-                if (body) params.set('body', body);
-
-                const paramString = params.toString();
-                if (paramString) {
-                    // FIX 2 (Richiesta 2): Sostituisci '+' con '%20' per compatibilità mailto
-                    mailto += `?${paramString.replace(/\+/g, '%20')}`;
-                }
-
-                outputTextarea.value = mailto;
-            }
-
-            /**
-             * Mostra un feedback testuale temporaneo su un bottone
-             */
-            function showButtonFeedback(button, message) {
-                const span = button.querySelector('span');
-                if (!span) return;
-
-                const originalText = span.textContent;
-                button.disabled = true;
-                span.textContent = message;
-
-                button.classList.add('ring-2', 'ring-offset-2', 'ring-brand-blue');
-
-                setTimeout(() => {
-                    span.textContent = originalText;
-                    button.disabled = false;
-                    button.classList.remove('ring-2', 'ring-offset-2', 'ring-brand-blue');
-                }, 2000);
-            }
-
-            /**
-             * Processa un file CSV e aggiunge le email
-             */
-            function parseCsvAndAppend(file, type, button) {
-                if (!file || (file.type !== 'text/csv' && !file.name.endsWith('.csv'))) {
-                    showButtonFeedback(button, 'File non valido');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        const csvText = event.target.result;
-                        
-                        const emails = csvText
-                            .split(/[\n,;\t]+/)
-                            .map(e => e.trim())
-                            .filter(e => e.includes('@'));
-
-                        if (emails.length === 0) {
-                            showButtonFeedback(button, 'Nessuna email trovata');
-                            return;
-                        }
-
-                        if (type === 'cc') {
-                            if (ccRecipients.length === 1 && ccRecipients[0] === '') {
-                                ccRecipients = emails;
-                            } else {
-                                ccRecipients = [...ccRecipients, ...emails];
+                tr.innerHTML = `
+                    <td class="px-4 py-1.5 text-mac-muted group-hover:text-mac-blue">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </td>
+                    <td class="px-4 py-1.5">${c.firstName || '-'}</td>
+                    <td class="px-4 py-1.5 font-medium">${c.lastName || '-'}</td>
+                    <td class="px-4 py-1.5 text-mac-blue">${c.email}</td>
+                    <td class="px-4 py-1.5 text-xs text-mac-muted">${c.company || '-'}</td>
+                    <td class="px-4 py-1.5 text-right">
+                        <div class="flex justify-end gap-1">
+                            ${currentTab === 'active' 
+                                ? `<button onclick="editContact('${c.id}')" class="p-1.5 rounded-md hover:bg-gray-100 text-mac-blue transition-colors" title="Modifica">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                   </button>
+                                   <button onclick="changeStatus('${c.id}', 'removed')" class="p-1.5 rounded-md hover:bg-red-50 text-mac-danger transition-colors" title="Cestina">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                   </button>`
+                                : `<button onclick="changeStatus('${c.id}', 'active')" class="p-1.5 rounded-md hover:bg-gray-100 text-mac-blue transition-colors" title="Ripristina">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                                   </button>
+                                   <button onclick="hardDelete('${c.id}')" class="p-1.5 rounded-md hover:bg-red-50 text-mac-danger transition-colors" title="Elimina Definitivamente">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                   </button>`
                             }
-                            renderRecipients('cc');
-                        } else {
-                            if (bccRecipients.length === 1 && bccRecipients[0] === '') {
-                                bccRecipients = emails;
-                            } else {
-                                bccRecipients = [...bccRecipients, ...emails];
-                            }
-                            renderRecipients('bcc');
-                        }
-                        
-                        generateMailto();
-                        showButtonFeedback(button, 'Importato!');
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
-                    } catch (err) {
-                        console.error("Errore durante l'importazione CSV:", err);
-                        showButtonFeedback(button, 'Errore lettura');
-                    }
-                };
-                reader.readAsText(file);
+        // --- DRAG AND DROP (Spostamento e Riordino) ---
+        function allowDrop(ev) { 
+            ev.preventDefault(); 
+        }
+
+        function drop(ev, newType) {
+            ev.preventDefault();
+            
+            // Rimuovi styling drag-over da tutti i tr
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+            const draggedId = ev.dataTransfer.getData("text/plain");
+            const draggedIndex = db.findIndex(c => c.id === draggedId);
+            
+            if (draggedIndex === -1) return;
+
+            const draggedItem = db[draggedIndex];
+            draggedItem.type = newType; // Aggiorna ruolo se spostato tra tabelle
+
+            // Determina la riga bersaglio (su quale riga ho rilasciato il mouse)
+            const targetTr = ev.target.closest('tr');
+            
+            if (targetTr && targetTr.dataset.id && targetTr.dataset.id !== draggedId) {
+                // Riordino array
+                const targetId = targetTr.dataset.id;
+                db.splice(draggedIndex, 1); // Rimuovi da posizione originale
+                const newTargetIndex = db.findIndex(c => c.id === targetId); // Ricalcola indice
+                db.splice(newTargetIndex, 0, draggedItem); // Inserisci prima del bersaglio
             }
 
-            /**
-             * Raccoglie i dati del form in un oggetto
-             */
-            function getFormData() {
-                return {
-                    to: toInput.value,
-                    cc: ccRecipients,
-                    bcc: bccRecipients,
-                    subject: subjectInput.value,
-                    body: bodyInput.value,
-                };
+            // Annulla l'ordinamento alfabetico per mostrare l'ordine manuale
+            sorting[newType].col = null; 
+            
+            saveData();
+            renderAllTables();
+        }
+
+        function setSort(type, col) {
+            if (sorting[type].col === col) {
+                sorting[type].asc = !sorting[type].asc;
+            } else { 
+                sorting[type].col = col; 
+                sorting[type].asc = true; 
+            }
+            renderSection(type);
+        }
+
+        // --- CRUD CONTATTI ---
+        function saveContact() {
+            const email = document.getElementById('form-email').value.trim();
+            const id = document.getElementById('form-id').value;
+
+            if (!email || !email.includes('@')) return alert("Email non valida");
+            // Check duplicati escludendo il record che stiamo modificando
+            if (db.some(c => c.email.toLowerCase() === email.toLowerCase() && c.id !== id)) {
+                return alert("Email già presente nel database!");
             }
 
-            /**
-             * Imposta i campi del form da un oggetto
-             */
-            function setFormData(data) {
-                toInput.value = data.to || '';
-                
-                if (Array.isArray(data.cc)) {
-                    ccRecipients = data.cc.length > 0 ? data.cc : [''];
-                } else if (data.cc) {
-                    ccRecipients = data.cc.split(',').map(e => e.trim());
-                } else {
-                    ccRecipients = [''];
+            if (id) {
+                // Modifica esistente
+                const c = db.find(c => c.id === id);
+                if (c) {
+                    c.firstName = document.getElementById('form-name').value.trim();
+                    c.lastName = document.getElementById('form-surname').value.trim();
+                    c.email = email;
+                    c.company = document.getElementById('form-company').value.trim();
+                    c.type = document.getElementById('form-type').value;
                 }
-                
-                if (Array.isArray(data.bcc)) {
-                    bccRecipients = data.bcc.length > 0 ? data.bcc : [''];
-                } else if (data.bcc) {
-                    bccRecipients = data.bcc.split(',').map(e => e.trim());
-                } else {
-                    bccRecipients = [''];
-                }
-                
-                renderRecipients('cc');
-                renderRecipients('bcc');
-                
-                subjectInput.value = data.subject || '';
-                bodyInput.value = data.body || '';
-                generateMailto();
+            } else {
+                // Nuovo Inserimento
+                db.push({
+                    id: Date.now().toString(),
+                    firstName: document.getElementById('form-name').value.trim(),
+                    lastName: document.getElementById('form-surname').value.trim(),
+                    email: email,
+                    company: document.getElementById('form-company').value.trim(),
+                    type: document.getElementById('form-type').value,
+                    status: 'active',
+                    removedAt: null
+                });
             }
+            saveData();
+            closeModal('add-modal');
+            renderAllTables();
+        }
 
-            /**
-             * Carica i dati salvati dal localStorage
-             */
-            function loadFromStorage() {
-                const data = localStorage.getItem(STORAGE_KEY);
-                if (data) {
-                    try {
-                        setFormData(JSON.parse(data));
-                    } catch (e) {
-                        console.error("Errore nel parsing dei dati salvati:", e);
-                        localStorage.removeItem(STORAGE_KEY);
-                        renderRecipients('cc');
-                        renderRecipients('bcc');
-                        generateMailto();
-                    }
-                } else {
-                    renderRecipients('cc');
-                    renderRecipients('bcc');
-                    generateMailto();
-                }
+        function editContact(id) {
+            const c = db.find(c => c.id === id);
+            if (!c) return;
+            
+            document.getElementById('form-id').value = c.id;
+            document.getElementById('form-name').value = c.firstName || '';
+            document.getElementById('form-surname').value = c.lastName || '';
+            document.getElementById('form-email').value = c.email || '';
+            document.getElementById('form-company').value = c.company || '';
+            document.getElementById('form-type').value = c.type || 'bcc';
+            
+            document.getElementById('modal-title').textContent = "Modifica Contatto";
+            openModal('add-modal');
+        }
+
+        function openNewContactModal() {
+            document.getElementById('form-id').value = '';
+            ['form-name', 'form-surname', 'form-email', 'form-company'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('form-type').value = 'bcc';
+            
+            document.getElementById('modal-title').textContent = "Nuovo Contatto";
+            openModal('add-modal');
+        }
+
+        function changeStatus(id, status) {
+            const c = db.find(c => c.id === id);
+            if(c) { 
+                c.status = status; 
+                c.removedAt = status === 'removed' ? new Date().toISOString() : null;
+                saveData(); renderAllTables(); 
             }
+        }
 
-            // --- EVENT LISTENERS ---
+        function hardDelete(id) {
+            if(confirm("Eliminare definitivamente?")) {
+                db = db.filter(c => c.id !== id);
+                saveData(); renderAllTables();
+            }
+        }
 
-            // Aggiorna live mentre si digita
-            toInput.addEventListener('input', generateMailto);
-            subjectInput.addEventListener('input', generateMailto);
-            bodyInput.addEventListener('input', generateMailto);
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-active').className = tab === 'active' ? "px-4 py-1 text-sm font-medium rounded-md bg-white shadow-sm" : "px-4 py-1 text-sm font-medium rounded-md text-mac-muted";
+            document.getElementById('tab-removed').className = tab === 'removed' ? "px-4 py-1 text-sm font-medium rounded-md bg-white shadow-sm" : "px-4 py-1 text-sm font-medium rounded-md text-mac-muted";
+            renderAllTables();
+        }
 
-            // Bottone: Copia
-            copyBtn.addEventListener('click', () => {
-                if (!outputTextarea.value) {
-                    showButtonFeedback(copyBtn, 'Nulla da copiare');
-                    return;
+        // --- IMPORT EXCEL ---
+        function processExcel() {
+            const text = document.getElementById('excel-paste-area').value.trim();
+            if (!text) return closeModal('excel-modal');
+            
+            const rows = text.split('\n');
+            let added = 0;
+
+            rows.forEach(row => {
+                const cols = row.split('\t').map(c => c.trim());
+                const email = cols.find(c => c.includes('@'));
+                if (email && !db.some(c => c.email.toLowerCase() === email.toLowerCase())) {
+                    db.push({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                        firstName: cols[0] || '', 
+                        lastName: cols[1] || '', 
+                        email: email, 
+                        company: cols[3] || '',
+                        type: 'bcc', 
+                        status: 'active', 
+                        removedAt: null
+                    });
+                    added++;
                 }
-                
-                outputTextarea.select();
-                document.execCommand('copy');
-                window.getSelection().removeAllRanges();
-                
-                showButtonFeedback(copyBtn, 'Copiato!');
             });
+            saveData(); 
+            renderAllTables(); 
+            closeModal('excel-modal');
+            document.getElementById('excel-paste-area').value = '';
+            alert(`Importati ${added} nuovi contatti.`);
+        }
 
-            // Bottone: Apri
-            openBtn.addEventListener('click', () => {
-                const mailtoLink = outputTextarea.value;
-                if (!mailtoLink || mailtoLink === 'mailto:') {
-                    showButtonFeedback(openBtn, 'Destinatario vuoto');
-                    return;
+        // --- MAILTO GENERATOR ---
+        function updateMailtoLink() {
+            const active = db.filter(c => c.status === 'active');
+            const to = active.filter(c => c.type === 'to').map(c => c.email).join(',');
+            const cc = active.filter(c => c.type === 'cc').map(c => c.email).join(',');
+            const bcc = active.filter(c => c.type === 'bcc').map(c => c.email).join(',');
+            
+            const subject = document.getElementById('mail-subject').value.trim();
+            const body = document.getElementById('mail-body').value.trim();
+            
+            let mailto = `mailto:${to}`;
+            const params = new URLSearchParams();
+            
+            if (cc) params.set('cc', cc);
+            if (bcc) params.set('bcc', bcc);
+            if (subject) params.set('subject', subject);
+            if (body) params.set('body', body);
+            
+            const pStr = params.toString().replace(/\+/g, '%20');
+            if (pStr) mailto += `?${pStr}`;
+            
+            document.getElementById('mailto-output').value = active.length ? mailto : 'Nessun destinatario attivo.';
+        }
+
+        function copyLink() {
+            const out = document.getElementById('mailto-output');
+            out.select(); document.execCommand('copy');
+            const b = document.getElementById('btn-copy'); 
+            b.textContent = "Copiato!";
+            setTimeout(() => b.textContent = "Copia Link", 2000);
+        }
+
+        function openMail() { 
+            const l = document.getElementById('mailto-output').value;
+            if(!l.startsWith('Nessun')) window.location.href = l; 
+        }
+
+        // --- EXPORT / IMPORT ---
+        function exportData() {
+            const blob = new Blob([JSON.stringify(db, null, 2)], { type: "application/json" });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `backup_mailmanager_${new Date().toISOString().split('T')[0]}.json`; a.click();
+        }
+
+        function importData(e) {
+            const f = e.target.files[0]; if (!f) return;
+            const r = new FileReader();
+            r.onload = (ev) => { 
+                try {
+                    db = JSON.parse(ev.target.result); 
+                    saveData(); 
+                    renderAllTables(); 
+                } catch(err) {
+                    alert("Errore file JSON");
                 }
-                window.location.href = mailtoLink;
-                showButtonFeedback(openBtn, 'Apro...');
-            });
+            };
+            r.readAsText(f);
+            e.target.value = '';
+        }
 
-            // Bottone: Salva nel Browser
-            saveBtn.addEventListener('click', () => {
-                const data = getFormData();
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-                showButtonFeedback(saveBtn, 'Salvato!');
-            });
+        function exportExcel() {
+            const activeDb = db.filter(c => c.status === 'active');
+            if (activeDb.length === 0) return alert("Nessun dato da esportare.");
 
-            // Bottone: Esporta JSON
-            exportBtn.addEventListener('click', () => {
-                const data = getFormData();
-                const json = JSON.stringify(data, null, 2);
-                const blob = new Blob([json], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                
-                // --- INIZIO MODIFICA: Naming file dinamico ---
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0'); // Mesi sono 0-indicizzati
-                const day = String(now.getDate()).padStart(2, '0');
-                const datePrefix = `${year}_${month}_${day}`;
+            const template = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><meta charset="UTF-8"></head>
+                <body>
+                    <table border="1">
+                        <thead>
+                            <tr style="background-color: #007aff; color: white; font-weight: bold;">
+                                <th>Tipo</th><th>Nome</th><th>Cognome</th><th>Email</th><th>Società/Funzione</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${activeDb.map(c => `
+                                <tr>
+                                    <td>${c.type.toUpperCase()}</td>
+                                    <td>${c.firstName || ""}</td>
+                                    <td>${c.lastName || ""}</td>
+                                    <td>${c.email}</td>
+                                    <td>${c.company || ""}</td>
+                                </tr>`).join('')}
+                        </tbody>
+                    </table>
+                </body>
+                </html>`;
 
-                let subjectText = subjectInput.value.trim();
-                if (!subjectText) {
-                    subjectText = 'senza_oggetto';
-                }
-                
-                // Sostituisce spazi con underscore e rimuove caratteri non validi
-                const safeSubject = subjectText
-                    .replace(/\s+/g, '_') // Sostituisce spazi (anche multipli) con _
-                    .replace(/[\\/:*?"<>|.]/g, ''); // Rimuove caratteri non validi per i nomi file (incluso il punto)
+            const blob = new Blob([template], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            // Usiamo .xls perché il contenuto è un XML Office-compliant che Excel riconosce nativamente
+            a.download = `destinatari_${new Date().toISOString().split('T')[0]}.xls`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
 
-                const fileName = `${datePrefix}_${safeSubject}.json`;
-                // --- FINE MODIFICA ---
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName; // Usa il nome file dinamico
-                document.body.appendChild(a);
-                a.click();
-                
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                showButtonFeedback(exportBtn, 'Esportato!');
-            });
+        // Funzione di supporto per pulire i testi da caratteri non validi in XML
+        function escapeXML(str) {
+            if (!str) return "";
+            return str.toString()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
+        }
 
-            // Bottone: Importa JSON
-            importFile.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        const data = JSON.parse(event.target.result);
-                        setFormData(data);
-                        showButtonFeedback(importBtn, 'Importato!');
-                    } catch (err) {
-                        console.error("Errore durante l'importazione:", err);
-                        showButtonFeedback(importBtn, 'Errore File!');
-                    }
-                };
-                reader.readAsText(file);
-                e.target.value = null;
-            });
-
-            // Bottone: Importa CSV per CC
-            importCcCsv.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    parseCsvAndAppend(file, 'cc', importCcBtn);
-                }
-                e.target.value = null;
-            });
-
-            // Bottone: Importa CSV per CCN
-            importBccCsv.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    parseCsvAndAppend(file, 'bcc', importBccBtn);
-                }
-                e.target.value = null;
-            });
-
-            // Bottone: Reset
-            resetBtn.addEventListener('click', () => {
-                // FIX 3: Rimosso confirm() perché non è supportato
-                ccRecipients = [''];
-                bccRecipients = [''];
-                setFormData({});
-                localStorage.removeItem(STORAGE_KEY);
-                showButtonFeedback(resetBtn, 'Resettato!');
-            });
-
-            // Caricamento iniziale
-            loadFromStorage();
-
-        });
+        // --- UTILITY ---
+        function openModal(id) { document.getElementById(id).classList.replace('hidden', 'flex'); }
+        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
     </script>
-
 </body>
 </html>

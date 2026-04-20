@@ -245,23 +245,124 @@
     </div>
 
     <div id="excel-modal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
-        <div class="bg-mac-card w-full max-w-2xl rounded-xl shadow-2xl border border-mac-border overflow-hidden">
+        <div class="bg-mac-card w-full max-w-md rounded-xl shadow-2xl border border-mac-border overflow-hidden">
             <div class="px-5 py-4 border-b border-mac-border bg-gray-50/50">
-                <h3 class="font-semibold text-mac-text">Importa da Excel / Fogli Google</h3>
-                <p class="text-xs text-mac-muted mt-1">Copia le celle dal foglio e incollale qui sotto. <br>Ordine colonne consigliato: <b>Nome | Cognome | Email | Società/Funzione</b></p>
+                <h3 class="font-semibold text-mac-text">Importa da File Excel o CSV</h3>
+                <p class="text-xs text-mac-muted mt-1">Ordine colonne suggerito: <b>Nome | Cognome | Email | Società</b></p>
             </div>
-            <div class="p-5">
-                <textarea id="excel-paste-area" rows="8" class="mac-input font-mono text-sm" placeholder="Incolla qui le celle..."></textarea>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Seleziona Documento</label>
+                    <input type="file" id="excel-file-upload" class="mac-input" accept=".xlsx, .xls, .csv">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Destinazione Predefinita</label>
+                    <select id="excel-dest-type" class="mac-input bg-white">
+                        <option value="to">A (To)</option>
+                        <option value="cc">CC (Copia Conoscenza)</option>
+                        <option value="bcc" selected>CCN (Copia Nascosta)</option>
+                    </select>
+                </div>
             </div>
             <div class="px-5 py-4 bg-gray-50/50 border-t border-mac-border flex justify-between items-center">
-                <div class="text-xs text-mac-muted">I duplicati (stessa email) verranno ignorati.</div>
+                <div class="text-xs text-mac-muted">I duplicati verranno ignorati.</div>
                 <div class="flex gap-2">
                     <button onclick="closeModal('excel-modal')" class="mac-btn mac-btn-secondary">Annulla</button>
-                    <button onclick="processExcel()" class="mac-btn mac-btn-primary">Importa Dati</button>
+                    <button onclick="processExcelFile()" class="mac-btn mac-btn-primary">Importa File</button>
                 </div>
             </div>
         </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script>
+        function processExcelFile() {
+            const fileInput = document.getElementById('excel-file-upload');
+            const destType = document.getElementById('excel-dest-type').value;
+            
+            if (!fileInput.files || !fileInput.files.length) {
+                return alert("Per favore seleziona prima un file da caricare.");
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Trasforma il foglio in un array bidimensionale
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                    let added = 0;
+
+                    for (let i = 0; i < rows.length; i++) {
+                        let row = rows[i];
+                        if (!row || row.length === 0) continue;
+
+                        // FIX: Se il CSV usa il punto e virgola (standard in Italia), la libreria
+                        // potrebbe leggere l'intera riga come una singola cella. Qui la dividiamo forzatamente.
+                        if (row.length === 1 && typeof row[0] === 'string' && row[0].includes(';')) {
+                            row = row[0].split(';');
+                        }
+                        
+                        // DEBUG: Stampa la riga nella console per farti vedere come la sta leggendo
+                        console.log("Riga " + i + ":", row);
+
+                        let emailStr = "";
+                        let emailIndex = -1;
+
+                        // Scandisce la riga cercando l'indirizzo email
+                        for (let j = 0; j < row.length; j++) {
+                            const val = String(row[j]).trim();
+                            if (val.includes('@') && val.includes('.')) {
+                                emailStr = val;
+                                emailIndex = j;
+                                break;
+                            }
+                        }
+
+                        // Ignora l'intestazione se la prima riga contiene la parola 'email'
+                        if (i === 0 && emailStr.toLowerCase() === 'email') continue;
+
+                        // Se trovo una email e non è già presente nel DB
+                        if (emailStr && !db.some(c => c.email && c.email.toLowerCase() === emailStr.toLowerCase())) {
+                            
+                            // Tenta di indovinare le colonne se presenti, altrimenti stringa vuota
+                            let nome = row[0] && 0 !== emailIndex ? String(row[0]).trim() : '';
+                            let cognome = row[1] && 1 !== emailIndex ? String(row[1]).trim() : '';
+                            let societa = row[3] && 3 !== emailIndex ? String(row[3]).trim() : (row[2] && 2 !== emailIndex && !String(row[2]).includes('@') ? String(row[2]).trim() : '');
+
+                            db.push({
+                                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                                firstName: nome,
+                                lastName: cognome,
+                                email: emailStr,
+                                company: societa,
+                                type: destType,
+                                status: 'active',
+                                removedAt: null
+                            });
+                            added++;
+                        }
+                    }
+
+                    saveData(); 
+                    renderAllTables(); 
+                    closeModal('excel-modal');
+                    fileInput.value = ''; // Resetta il selettore
+                    alert(`Importazione completata con successo! Aggiunti ${added} contatti alla destinazione ${destType.toUpperCase()}.`);
+                } catch (err) {
+                    alert("Errore durante la lettura. Assicurati che sia un file .xlsx o .csv valido.");
+                    console.error(err);
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
 
     <script>
         // --- STATO APPLICAZIONE ---
@@ -513,19 +614,25 @@
             const text = document.getElementById('excel-paste-area').value.trim();
             if (!text) return closeModal('excel-modal');
             
-            const rows = text.split('\n');
+            // Usa una regex per supportare i ritorni a capo sia di Windows (\r\n) che di Mac/Linux (\n)
+            const rows = text.split(/\r?\n/);
             let added = 0;
 
             rows.forEach(row => {
+                if (!row.trim()) return; // Ignora le righe vuote
+                
                 const cols = row.split('\t').map(c => c.trim());
-                const email = cols.find(c => c.includes('@'));
-                if (email && !db.some(c => c.email.toLowerCase() === email.toLowerCase())) {
+                // Verifica l'email in modo più accurato
+                const email = cols.find(c => c.includes('@') && c.includes('.'));
+                
+                // Evita crash se un contatto esistente non ha la proprietà email valorizzata (database sporco)
+                if (email && !db.some(c => c.email && c.email.toLowerCase() === email.toLowerCase())) {
                     db.push({
                         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                        firstName: cols[0] || '', 
-                        lastName: cols[1] || '', 
+                        firstName: cols[0] && cols[0] !== email ? cols[0] : '', 
+                        lastName: cols[1] && cols[1] !== email ? cols[1] : '', 
                         email: email, 
-                        company: cols[3] || '',
+                        company: cols[3] && cols[3] !== email ? cols[3] : '',
                         type: 'bcc', 
                         status: 'active', 
                         removedAt: null

@@ -686,7 +686,15 @@
 
         // --- EXPORT / IMPORT ---
         function exportData() {
-            const blob = new Blob([JSON.stringify(db, null, 2)], { type: "application/json" });
+            // Creiamo un pacchetto che include sia i contatti che i testi correnti
+            const exportPkg = {
+                contacts: db,
+                draft: {
+                    subject: document.getElementById('mail-subject').value,
+                    body: document.getElementById('mail-body').value
+                }
+            };
+            const blob = new Blob([JSON.stringify(exportPkg, null, 2)], { type: "application/json" });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
             a.download = `backup_mailmanager_${new Date().toISOString().split('T')[0]}.json`; a.click();
         }
@@ -696,11 +704,22 @@
             const r = new FileReader();
             r.onload = (ev) => { 
                 try {
-                    db = JSON.parse(ev.target.result); 
+                    const data = JSON.parse(ev.target.result);
+                    // Supporto sia per il vecchio formato (array) che per il nuovo (oggetto con draft)
+                    if (Array.isArray(data)) {
+                        db = data;
+                    } else {
+                        db = data.contacts || [];
+                        if (data.draft) {
+                            document.getElementById('mail-subject').value = data.draft.subject || '';
+                            document.getElementById('mail-body').value = data.draft.body || '';
+                        }
+                    }
                     saveData(); 
                     renderAllTables(); 
+                    updateMailtoLink();
                 } catch(err) {
-                    alert("Errore file JSON");
+                    alert("Errore nel caricamento del file JSON.");
                 }
             };
             r.readAsText(f);

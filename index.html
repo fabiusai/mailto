@@ -81,7 +81,7 @@
                 <svg class="w-6 h-6 text-mac-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/></svg>
                 <h1 class="text-lg font-semibold text-mac-text flex items-center gap-2">
                     Mail Manager 
-                    <span class="text-[10px] font-bold bg-blue-100 text-mac-blue px-2 py-0.5 rounded-full tracking-wide">v2.1</span>
+                    <span class="text-[10px] font-bold bg-blue-100 text-mac-blue px-2 py-0.5 rounded-full tracking-wide">v2.2</span>
                 </h1>
             </div>
         <div class="flex gap-2">
@@ -781,17 +781,27 @@
 
         // --- EXPORT / IMPORT ---
         function exportData() {
-            // Creiamo un pacchetto che include sia i contatti che i testi correnti
+            // Recupero e sanificazione oggetto per il nome file
+            const subjValue = document.getElementById('mail-subject').value;
+            const sanitizedSubj = subjValue ? subjValue.trim().replace(/\s+/g, '_') : 'backup';
+            
+            // Formattazione data aaaa_mm_gg_
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const datePrefix = `${year}_${month}_${day}_`;
+
             const exportPkg = {
                 contacts: db,
                 draft: {
-                    subject: document.getElementById('mail-subject').value,
+                    subject: subjValue,
                     body: document.getElementById('mail-body').value
                 }
             };
             const blob = new Blob([JSON.stringify(exportPkg, null, 2)], { type: "application/json" });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `backup_mailmanager_${new Date().toISOString().split('T')[0]}.json`; a.click();
+            a.download = `${datePrefix}${sanitizedSubj}.json`; a.click();
         }
 
         function importData(e) {

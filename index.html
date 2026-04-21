@@ -97,109 +97,149 @@
         
         <main class="flex-1 flex flex-col h-full bg-mac-bg p-4 overflow-hidden gap-4">
             
-            <div class="flex justify-between items-center px-2">
-                <div class="flex gap-1 bg-gray-200/60 p-1 rounded-lg">
-                    <button onclick="switchTab('active')" id="tab-active" class="px-4 py-1 text-sm font-medium rounded-md bg-white shadow-sm transition-all">Attivi</button>
-                    <button onclick="switchTab('removed')" id="tab-removed" class="px-4 py-1 text-sm font-medium rounded-md text-mac-muted hover:text-mac-text transition-all">Cestinati</button>
+            <div class="flex justify-between items-center px-2 shrink-0">
+                <div class="flex items-center gap-4">
+                    <div class="flex gap-1 bg-gray-200/60 p-1 rounded-lg">
+                        <button onclick="switchTab('active')" id="tab-active" class="px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm transition-all flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Attivi
+                        </button>
+                        <button onclick="switchTab('removed')" id="tab-removed" class="px-4 py-1.5 text-sm font-medium rounded-md text-mac-muted hover:text-mac-text transition-all flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Cestinati
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="if(confirm('Svuotare tutti i contatti e i campi?')){ db=[]; saveData(); document.getElementById('mail-subject').value=''; document.getElementById('mail-body').value=''; localStorage.removeItem('macMailManagerDraft'); renderAllTables(); }" class="mac-btn mac-btn-danger text-sm py-1.5 px-3">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Reset
+                        </button>
+                        <button onclick="localStorage.setItem('macMailManagerDraft', JSON.stringify({subject: document.getElementById('mail-subject').value, body: document.getElementById('mail-body').value})); alert('Dati salvati!');" class="mac-btn mac-btn-secondary text-sm py-1.5 px-3">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Salva nel browser
+                        </button>
+                    </div>
                 </div>
-                <div class="flex gap-3 items-center">
-                    <input type="search" id="search-input" placeholder="Cerca ovunque..." class="mac-input w-64 text-sm" onkeyup="renderAllTables()">
-                    <button onclick="openNewContactModal()" class="mac-btn mac-btn-primary">+ Nuovo</button>
-                    <button onclick="openModal('excel-modal')" class="mac-btn mac-btn-secondary">Incolla da Excel</button>
+                <div class="flex gap-3 items-center shrink-0">
+                    <div class="relative">
+                        <svg class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="search" id="search-input" placeholder="Cerca..." class="mac-input pl-9 w-56 text-sm" onkeyup="renderAllTables()">
+                    </div>
+                    <button onclick="openNewContactModal()" class="mac-btn mac-btn-primary shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> Nuovo
+                    </button>
+                    <button onclick="openModal('excel-modal')" class="mac-btn mac-btn-secondary shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Incolla da Excel
+                    </button>
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto space-y-6 pr-2">
+            <div class="flex-1 flex gap-4 min-h-0 mt-2">
                 
-                <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
-                    <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
-                        <span class="text-xs font-bold text-mac-muted uppercase">A: (Destinatari Principali)</span>
-                        <span id="count-to" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
-                    </div>
-                    <table class="w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
-                            <tr>
-                                <th class="px-4 py-2 w-[5%]"></th>
-                                <th class="px-4 py-2 w-[15%]" onclick="setSort('to', 'firstName')">Nome</th>
-                                <th class="px-4 py-2 w-[15%]" onclick="setSort('to', 'lastName')">Cognome</th>
-                                <th class="px-4 py-2 w-[25%]" onclick="setSort('to', 'email')">Email</th>
-                                <th class="px-4 py-2 w-[25%]" onclick="setSort('to', 'company')">Società/Funzione</th>
-                                <th class="px-4 py-2 w-[15%] text-right">Azioni</th>
-                            </tr>
-                        </thead>
-                        <tbody id="body-to" class="divide-y divide-gray-100 min-h-[50px]" 
-                               ondragover="allowDrop(event)" ondrop="drop(event, 'to')"></tbody>
-                    </table>
-                </div>
-
-                <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
-                    <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
-                        <span class="text-xs font-bold text-mac-muted uppercase">CC: (Copia Conoscenza)</span>
-                        <span id="count-cc" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
-                    </div>
-                    <table class="w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
-                            <tr>
-                                <th class="px-4 py-2 w-[5%]"></th>
-                                <th class="px-4 py-2 w-[15%]" onclick="setSort('cc', 'firstName')">Nome</th>
-                                <th class="px-4 py-2 w-[15%]" onclick="setSort('cc', 'lastName')">Cognome</th>
-                                <th class="px-4 py-2 w-[25%]" onclick="setSort('cc', 'email')">Email</th>
-                                <th class="px-4 py-2 w-[25%]" onclick="setSort('cc', 'company')">Società/Funzione</th>
-                                <th class="px-4 py-2 w-[15%] text-right">Azioni</th>
-                            </tr>
-                        </thead>
-                        <tbody id="body-cc" class="divide-y divide-gray-100 min-h-[50px]"
-                               ondragover="allowDrop(event)" ondrop="drop(event, 'cc')"></tbody>
-                    </table>
-                </div>
-
-                <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
-                    <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
-                        <span class="text-xs font-bold text-mac-muted uppercase">BCC: (Copia Nascosta)</span>
-                        <span id="count-bcc" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
-                    </div>
-                    <table class="w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
-                            <tr>
-                                <th class="px-4 py-2 w-[5%]"></th>
-                                <th class="px-4 py-2 w-[15%]" onclick="setSort('bcc', 'firstName')">Nome</th>
-                                <th class="px-4 py-2 w-[15%]" onclick="setSort('bcc', 'lastName')">Cognome</th>
-                                <th class="px-4 py-2 w-[25%]" onclick="setSort('bcc', 'email')">Email</th>
-                                <th class="px-4 py-2 w-[25%]" onclick="setSort('bcc', 'company')">Società/Funzione</th>
-                                <th class="px-4 py-2 w-[15%] text-right">Azioni</th>
-                            </tr>
-                        </thead>
-                        <tbody id="body-bcc" class="divide-y divide-gray-100 min-h-[50px]"
-                               ondragover="allowDrop(event)" ondrop="drop(event, 'bcc')"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm p-4 shrink-0 flex flex-col gap-3">
-                <div class="flex flex-col gap-3">
-                    <input type="text" id="mail-subject" class="mac-input w-full" placeholder="Oggetto..." oninput="updateMailtoLink()">
-                    <textarea id="mail-body" rows="10" class="mac-input w-full resize-none" placeholder="Messaggio..." oninput="updateMailtoLink()"></textarea>
-                </div>
-                <div class="flex-1 bg-mac-bg border border-mac-border rounded-lg p-2 flex flex-col justify-between min-h-[80px]">
-                    <textarea id="mailto-output" readonly class="w-full bg-transparent border-none outline-none text-[10px] text-mac-muted resize-none font-mono flex-1"></textarea>
-                    <div class="flex justify-between items-center mt-2">
-                        <div class="flex gap-2">
-                            <button onclick="if(confirm('Vuoi davvero svuotare tutti i contatti e i campi di testo?')){ db=[]; saveData(); document.getElementById('mail-subject').value=''; document.getElementById('mail-body').value=''; localStorage.removeItem('macMailManagerDraft'); renderAllTables(); }" class="mac-btn mac-btn-danger text-[10px] py-1 px-2">Svuota Tutto</button>
-                            <button onclick="localStorage.setItem('macMailManagerDraft', JSON.stringify({subject: document.getElementById('mail-subject').value, body: document.getElementById('mail-body').value})); alert('Dati form salvati in memoria!');" class="mac-btn mac-btn-secondary text-[10px] py-1 px-2">Salva Dati</button>
+                <div class="w-2/3 h-full overflow-y-auto pr-2 space-y-6 pb-4">
+                    
+                    <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
+                            <span class="text-xs font-bold text-mac-muted uppercase">A: (Destinatari Principali)</span>
+                            <span id="count-to" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
                         </div>
-                        <div class="flex justify-end gap-2">
-                            <button onclick="copyLink()" id="btn-copy" class="mac-btn mac-btn-secondary text-[10px] py-1 px-2">Copia Link</button>
-                            <button onclick="openMail()" id="btn-open" class="mac-btn mac-btn-primary text-[10px] py-1 px-2">Apri Client Email</button>
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
+                                <tr>
+                                    <th class="px-4 py-2 w-[5%]"></th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('to', 'firstName')">Nome</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('to', 'lastName')">Cognome</th>
+                                    <th class="px-4 py-2 w-[25%]" onclick="setSort('to', 'email')">Email</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('to', 'company')">Società</th>
+                                    <th class="px-4 py-2 w-[10%] text-right">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="body-to" class="divide-y divide-gray-100 min-h-[50px]" ondragover="allowDrop(event)" ondrop="drop(event, 'to')"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
+                            <span class="text-xs font-bold text-mac-muted uppercase">CC: (Copia Conoscenza)</span>
+                            <span id="count-cc" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
                         </div>
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
+                                <tr>
+                                    <th class="px-4 py-2 w-[5%]"></th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('cc', 'firstName')">Nome</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('cc', 'lastName')">Cognome</th>
+                                    <th class="px-4 py-2 w-[25%]" onclick="setSort('cc', 'email')">Email</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('cc', 'company')">Società</th>
+                                    <th class="px-4 py-2 w-[10%] text-right">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="body-cc" class="divide-y divide-gray-100 min-h-[50px]" ondragover="allowDrop(event)" ondrop="drop(event, 'cc')"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
+                            <span class="text-xs font-bold text-mac-muted uppercase">BCC: (Copia Nascosta)</span>
+                            <span id="count-bcc" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
+                                <tr>
+                                    <th class="px-4 py-2 w-[5%]"></th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('bcc', 'firstName')">Nome</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('bcc', 'lastName')">Cognome</th>
+                                    <th class="px-4 py-2 w-[25%]" onclick="setSort('bcc', 'email')">Email</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('bcc', 'company')">Società</th>
+                                    <th class="px-4 py-2 w-[10%] text-right">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="body-bcc" class="divide-y divide-gray-100 min-h-[50px]" ondragover="allowDrop(event)" ondrop="drop(event, 'bcc')"></tbody>
+                        </table>
                     </div>
                 </div>
-                <script>
-                    const savedDraft = JSON.parse(localStorage.getItem('macMailManagerDraft') || 'null');
-                    if (savedDraft) {
-                        document.getElementById('mail-subject').value = savedDraft.subject || '';
-                        document.getElementById('mail-body').value = savedDraft.body || '';
-                    }
-                </script>
+
+                <div class="w-1/3 bg-mac-card rounded-xl border border-mac-border shadow-sm flex flex-col overflow-hidden h-full">
+                    <div class="px-5 py-3 border-b border-mac-border bg-gray-50/50 shrink-0">
+                        <h3 class="font-semibold text-mac-text flex items-center gap-2">
+                            <svg class="w-5 h-5 text-mac-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            Componi Messaggio
+                        </h3>
+                    </div>
+                    
+                    <div class="p-5 flex-1 flex flex-col gap-4 overflow-y-auto">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-semibold text-mac-muted">Oggetto</label>
+                            <input type="text" id="mail-subject" class="mac-input w-full text-base" placeholder="Inserisci l'oggetto..." oninput="updateMailtoLink()">
+                        </div>
+                        <div class="flex flex-col gap-1 flex-1">
+                            <label class="text-xs font-semibold text-mac-muted">Corpo del messaggio</label>
+                            <textarea id="mail-body" class="mac-input w-full flex-1 resize-none text-base min-h-[120px]" placeholder="Scrivi qui il tuo messaggio..." oninput="updateMailtoLink()"></textarea>
+                        </div>
+                        <div class="bg-gray-50 border border-mac-border rounded-lg p-3 flex flex-col h-28 shrink-0">
+                            <label class="text-[10px] font-bold text-mac-muted uppercase mb-1">Stringa Mailto</label>
+                            <textarea id="mailto-output" readonly class="w-full bg-transparent border-none outline-none text-xs text-mac-muted resize-none font-mono flex-1"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 bg-gray-50/50 border-t border-mac-border flex flex-col gap-2 shrink-0">
+                        <button onclick="copyLink()" id="btn-copy" class="mac-btn mac-btn-secondary w-full py-2.5 text-sm flex justify-center shadow-sm hover:shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Copia Link Mailto
+                        </button>
+                        <button onclick="openMail()" id="btn-open" class="mac-btn mac-btn-primary w-full py-2.5 text-sm flex justify-center shadow-md hover:shadow-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> Apri Client Email
+                        </button>
+                    </div>
+                    
+                    <script>
+                        // Isolato per prevenire "redeclaration" globals
+                        (function() {
+                            try {
+                                var draft = JSON.parse(localStorage.getItem('macMailManagerDraft'));
+                                if (draft) {
+                                    document.getElementById('mail-subject').value = draft.subject || '';
+                                    document.getElementById('mail-body').value = draft.body || '';
+                                }
+                            } catch(e) {}
+                        })();
+                    </script>
+                </div>
             </div>
         </main>
     </div>

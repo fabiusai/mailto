@@ -19,7 +19,885 @@
                         'mac-blue-hover': '#0062cc',
                         'mac-text': '#1d1d1f',
                         'mac-muted': '#86868b',
+                        'mac-border': '#d2d2d7',<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mail Manager</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mac-bg': '#f5f5f7',
+                        'mac-card': '#ffffff',
+                        'mac-blue': '#007aff',
+                        'mac-blue-hover': '#0062cc',
+                        'mac-text': '#1d1d1f',
+                        'mac-muted': '#86868b',
                         'mac-border': '#d2d2d7',
+                        'mac-danger': '#ff3b30'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f5f5f7; color: #1d1d1f; }
+        
+        /* Scrollbar in stile Mac */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* Controlli Form */
+        .mac-input {
+            width: 100%; padding: 0.5rem 0.75rem; background: #ffffff;
+            border: 1px solid #d2d2d7; border-radius: 8px; font-size: 0.875rem;
+            transition: all 0.2s ease; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .mac-input:focus { border-color: #007aff; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2); }
+        
+        /* Bottoni */
+        .mac-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+            padding: 0.4rem 0.8rem; font-size: 0.875rem; font-weight: 500; border-radius: 6px;
+            transition: all 0.15s ease; cursor: pointer; border: 1px solid transparent;
+        }
+        .mac-btn-primary { background: #007aff; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .mac-btn-primary:hover { background: #0062cc; }
+        .mac-btn-secondary { background: #ffffff; color: #1d1d1f; border-color: #d2d2d7; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .mac-btn-secondary:hover { background: #f5f5f7; }
+        .mac-btn-danger { background: #ff3b30; color: white; }
+        .mac-btn-danger:hover { background: #d32f2f; }
+
+        /* Tabelle e Drag/Drop */
+        th { cursor: pointer; user-select: none; }
+        th:hover { background-color: #f0f0f0; }
+        tr.dragging { opacity: 0.5; background-color: #e5f1ff; }
+        tr.drag-over { border-top: 2px solid #007aff; }
+
+        /* Modali */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <header class="bg-mac-card border-b border-mac-border px-6 py-3 flex justify-between items-center z-10">
+        <div class="flex items-center gap-2">
+                <svg class="w-6 h-6 text-mac-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/></svg>
+                <h1 class="text-lg font-semibold text-mac-text flex items-center gap-2">
+                    Mail Manager 
+                    <span class="text-[10px] font-bold bg-blue-100 text-mac-blue px-2 py-0.5 rounded-full tracking-wide">v2.0</span>
+                </h1>
+            </div>
+        <div class="flex gap-2">
+            <button onclick="exportExcel()" class="mac-btn mac-btn-secondary text-sm">Esporta Excel</button>
+            <button onclick="exportData()" class="mac-btn mac-btn-secondary text-sm">Esporta JSON</button>
+            <label class="mac-btn mac-btn-secondary text-sm cursor-pointer mb-0">
+                Importa JSON <input type="file" id="import-json" class="hidden" accept=".json">
+            </label>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <main class="flex-1 flex flex-col h-full bg-mac-bg p-4 overflow-hidden gap-4">
+            
+            <div class="flex justify-between items-center px-2 shrink-0">
+                <div class="flex items-center gap-4">
+                    <div class="flex gap-1 bg-gray-200/60 p-1 rounded-lg">
+                        <button onclick="switchTab('active')" id="tab-active" class="px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm transition-all flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Attivi
+                        </button>
+                        <button onclick="switchTab('removed')" id="tab-removed" class="px-4 py-1.5 text-sm font-medium rounded-md text-mac-muted hover:text-mac-text transition-all flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Cestinati
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="if(confirm('Svuotare tutti i contatti e i campi?')){ db=[]; saveData(); document.getElementById('mail-subject').value=''; document.getElementById('mail-body').value=''; localStorage.removeItem('macMailManagerDraft'); renderAllTables(); }" class="mac-btn mac-btn-danger text-sm py-1.5 px-3">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Reset
+                        </button>
+                        <button onclick="localStorage.setItem('macMailManagerDraft', JSON.stringify({subject: document.getElementById('mail-subject').value, body: document.getElementById('mail-body').value})); alert('Dati salvati!');" class="mac-btn mac-btn-secondary text-sm py-1.5 px-3">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Salva nel browser
+                        </button>
+                    </div>
+                </div>
+                <div class="flex gap-3 items-center shrink-0">
+                    <div class="relative">
+                        <svg class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="search" id="search-input" placeholder="Cerca..." class="mac-input pl-9 w-56 text-sm" onkeyup="renderAllTables()">
+                    </div>
+                    <button onclick="openNewContactModal()" class="mac-btn mac-btn-primary shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> Nuovo
+                    </button>
+                    <button onclick="openModal('excel-modal')" class="mac-btn mac-btn-secondary shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Incolla da Excel
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 flex gap-4 min-h-0 mt-2">
+                
+                <div class="w-2/3 h-full overflow-y-auto pr-2 space-y-6 pb-4">
+                    
+                    <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
+                            <span class="text-xs font-bold text-mac-muted uppercase">A: (Destinatari Principali)</span>
+                            <span id="count-to" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
+                                <tr>
+                                    <th class="px-4 py-2 w-[5%]"></th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('to', 'firstName')">Nome</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('to', 'lastName')">Cognome</th>
+                                    <th class="px-4 py-2 w-[25%]" onclick="setSort('to', 'email')">Email</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('to', 'company')">Società</th>
+                                    <th class="px-4 py-2 w-[10%] text-right">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="body-to" class="divide-y divide-gray-100 min-h-[50px]" ondragover="allowDrop(event)" ondrop="drop(event, 'to')"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
+                            <span class="text-xs font-bold text-mac-muted uppercase">CC: (Copia Conoscenza)</span>
+                            <span id="count-cc" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
+                                <tr>
+                                    <th class="px-4 py-2 w-[5%]"></th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('cc', 'firstName')">Nome</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('cc', 'lastName')">Cognome</th>
+                                    <th class="px-4 py-2 w-[25%]" onclick="setSort('cc', 'email')">Email</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('cc', 'company')">Società</th>
+                                    <th class="px-4 py-2 w-[10%] text-right">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="body-cc" class="divide-y divide-gray-100 min-h-[50px]" ondragover="allowDrop(event)" ondrop="drop(event, 'cc')"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-mac-card rounded-xl border border-mac-border shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-4 py-2 bg-gray-50 border-b border-mac-border flex justify-between items-center sticky top-0 z-10">
+                            <span class="text-xs font-bold text-mac-muted uppercase">BCC: (Copia Nascosta)</span>
+                            <span id="count-bcc" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-gray-50/50 text-xs text-mac-muted border-b border-mac-border table-fixed w-full">
+                                <tr>
+                                    <th class="px-4 py-2 w-[5%]"></th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('bcc', 'firstName')">Nome</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('bcc', 'lastName')">Cognome</th>
+                                    <th class="px-4 py-2 w-[25%]" onclick="setSort('bcc', 'email')">Email</th>
+                                    <th class="px-4 py-2 w-[20%]" onclick="setSort('bcc', 'company')">Società</th>
+                                    <th class="px-4 py-2 w-[10%] text-right">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="body-bcc" class="divide-y divide-gray-100 min-h-[50px]" ondragover="allowDrop(event)" ondrop="drop(event, 'bcc')"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="w-1/3 bg-mac-card rounded-xl border border-mac-border shadow-sm flex flex-col overflow-hidden h-full">
+                    <div class="px-5 py-3 border-b border-mac-border bg-gray-50/50 shrink-0">
+                        <h3 class="font-semibold text-mac-text flex items-center gap-2">
+                            <svg class="w-5 h-5 text-mac-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            Componi Messaggio
+                        </h3>
+                    </div>
+                    
+                    <div class="p-5 flex-1 flex flex-col gap-4 overflow-y-auto">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-semibold text-mac-muted">Oggetto</label>
+                            <input type="text" id="mail-subject" class="mac-input w-full text-base" placeholder="Inserisci l'oggetto..." oninput="updateMailtoLink()">
+                        </div>
+                        <div class="flex flex-col gap-1 flex-1">
+                            <label class="text-xs font-semibold text-mac-muted">Corpo del messaggio</label>
+                            <textarea id="mail-body" class="mac-input w-full flex-1 resize-none text-base min-h-[120px]" placeholder="Scrivi qui il tuo messaggio..." oninput="updateMailtoLink()"></textarea>
+                        </div>
+                        <div class="bg-gray-50 border border-mac-border rounded-lg p-3 flex flex-col h-28 shrink-0">
+                            <label class="text-[10px] font-bold text-mac-muted uppercase mb-1">Stringa Mailto</label>
+                            <textarea id="mailto-output" readonly class="w-full bg-transparent border-none outline-none text-xs text-mac-muted resize-none font-mono flex-1"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 bg-gray-50/50 border-t border-mac-border flex flex-col gap-2 shrink-0">
+                        <button onclick="copyLink()" id="btn-copy" class="mac-btn mac-btn-secondary w-full py-2.5 text-sm flex justify-center shadow-sm hover:shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Copia Link Mailto
+                        </button>
+                        <button onclick="openMail()" id="btn-open" class="mac-btn mac-btn-primary w-full py-2.5 text-sm flex justify-center shadow-md hover:shadow-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> Apri Client Email
+                        </button>
+                    </div>
+                    
+                    <script>
+                        // Isolato per prevenire "redeclaration" globals
+                        (function() {
+                            try {
+                                var draft = JSON.parse(localStorage.getItem('macMailManagerDraft'));
+                                if (draft) {
+                                    document.getElementById('mail-subject').value = draft.subject || '';
+                                    document.getElementById('mail-body').value = draft.body || '';
+                                }
+                            } catch(e) {}
+                        })();
+                    </script>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="add-modal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+        <div class="bg-mac-card w-full max-w-md rounded-xl shadow-2xl border border-mac-border overflow-hidden">
+            <div class="px-5 py-4 border-b border-mac-border bg-gray-50/50">
+                <h3 id="modal-title" class="font-semibold text-mac-text">Nuovo Contatto</h3>
+            </div>
+            <div class="p-5 space-y-4">
+                <input type="hidden" id="form-id">
+                <div class="flex gap-4">
+                    <div class="w-1/2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nome</label>
+                        <input type="text" id="form-name" class="mac-input">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Cognome</label>
+                        <input type="text" id="form-surname" class="mac-input">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Email *</label>
+                    <input type="email" id="form-email" class="mac-input" required>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-2/3">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Società / Funzione</label>
+                        <input type="text" id="form-company" class="mac-input">
+                    </div>
+                    <div class="w-1/3">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Destinazione</label>
+                        <select id="form-type" class="mac-input bg-white">
+                            <option value="to">A (To)</option>
+                            <option value="cc">CC</option>
+                            <option value="bcc" selected>CCN (Nascosta)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="px-5 py-4 bg-gray-50/50 border-t border-mac-border flex justify-end gap-2">
+                <button onclick="closeModal('add-modal')" class="mac-btn mac-btn-secondary">Annulla</button>
+                <button onclick="saveContact()" class="mac-btn mac-btn-primary">Salva Contatto</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="excel-modal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+        <div class="bg-mac-card w-full max-w-md rounded-xl shadow-2xl border border-mac-border overflow-hidden">
+            <div class="px-5 py-4 border-b border-mac-border bg-gray-50/50">
+                <h3 class="font-semibold text-mac-text">Importa da File Excel o CSV</h3>
+                <p class="text-xs text-mac-muted mt-1">Ordine colonne suggerito: <b>Nome | Cognome | Email | Società</b></p>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Seleziona Documento</label>
+                    <input type="file" id="excel-file-upload" class="mac-input" accept=".xlsx, .xls, .csv">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Destinazione Predefinita</label>
+                    <select id="excel-dest-type" class="mac-input bg-white">
+                        <option value="to">A (To)</option>
+                        <option value="cc">CC (Copia Conoscenza)</option>
+                        <option value="bcc" selected>CCN (Copia Nascosta)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="px-5 py-4 bg-gray-50/50 border-t border-mac-border flex justify-between items-center">
+                <div class="text-xs text-mac-muted">I duplicati verranno ignorati.</div>
+                <div class="flex gap-2">
+                    <button onclick="closeModal('excel-modal')" class="mac-btn mac-btn-secondary">Annulla</button>
+                    <button onclick="processExcelFile()" class="mac-btn mac-btn-primary">Importa File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script>
+        function processExcelFile() {
+            const fileInput = document.getElementById('excel-file-upload');
+            const destType = document.getElementById('excel-dest-type').value;
+            
+            if (!fileInput.files || !fileInput.files.length) {
+                return alert("Per favore seleziona prima un file da caricare.");
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Trasforma il foglio in un array bidimensionale
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                    let added = 0;
+
+                    for (let i = 0; i < rows.length; i++) {
+                        let row = rows[i];
+                        if (!row || row.length === 0) continue;
+
+                        // FIX: Se il CSV usa il punto e virgola (standard in Italia), la libreria
+                        // potrebbe leggere l'intera riga come una singola cella. Qui la dividiamo forzatamente.
+                        if (row.length === 1 && typeof row[0] === 'string' && row[0].includes(';')) {
+                            row = row[0].split(';');
+                        }
+                        
+                        // DEBUG: Stampa la riga nella console per farti vedere come la sta leggendo
+                        console.log("Riga " + i + ":", row);
+
+                        let emailStr = "";
+                        let emailIndex = -1;
+
+                        // Scandisce la riga cercando l'indirizzo email
+                        for (let j = 0; j < row.length; j++) {
+                            const val = String(row[j]).trim();
+                            if (val.includes('@') && val.includes('.')) {
+                                emailStr = val;
+                                emailIndex = j;
+                                break;
+                            }
+                        }
+
+                        // Ignora l'intestazione se la prima riga contiene la parola 'email'
+                        if (i === 0 && emailStr.toLowerCase() === 'email') continue;
+
+                        // Se trovo una email e non è già presente nel DB
+                        if (emailStr && !db.some(c => c.email && c.email.toLowerCase() === emailStr.toLowerCase())) {
+                            
+                            // Tenta di indovinare le colonne se presenti, altrimenti stringa vuota
+                            let nome = row[0] && 0 !== emailIndex ? String(row[0]).trim() : '';
+                            let cognome = row[1] && 1 !== emailIndex ? String(row[1]).trim() : '';
+                            let societa = row[3] && 3 !== emailIndex ? String(row[3]).trim() : (row[2] && 2 !== emailIndex && !String(row[2]).includes('@') ? String(row[2]).trim() : '');
+
+                            db.push({
+                                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                                firstName: nome,
+                                lastName: cognome,
+                                email: emailStr,
+                                company: societa,
+                                type: destType,
+                                status: 'active',
+                                removedAt: null
+                            });
+                            added++;
+                        }
+                    }
+
+                    saveData(); 
+                    renderAllTables(); 
+                    closeModal('excel-modal');
+                    fileInput.value = ''; // Resetta il selettore
+                    alert(`Importazione completata con successo! Aggiunti ${added} contatti alla destinazione ${destType.toUpperCase()}.`);
+                } catch (err) {
+                    alert("Errore durante la lettura. Assicurati che sia un file .xlsx o .csv valido.");
+                    console.error(err);
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+
+    <script>
+        // --- STATO APPLICAZIONE ---
+        const STORAGE_KEY = 'macMailManagerDB';
+        let db = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        let currentTab = 'active';
+        
+        // Sorting status. Se null, significa che l'utente ha fatto drag&drop e vogliamo preservare l'ordine manuale
+        let sorting = {
+            to: { col: null, asc: true },
+            cc: { col: null, asc: true },
+            bcc: { col: null, asc: true }
+        };
+
+        window.onload = () => {
+            document.getElementById('import-json').addEventListener('change', importData);
+            renderAllTables();
+            setupDragAndDrop();
+        };
+
+        function setupDragAndDrop() {
+            // Creiamo un overlay visivo dinamicamente per il Drag & Drop
+            const overlay = document.createElement('div');
+            overlay.className = "fixed inset-0 bg-[#007aff]/90 z-[100] hidden flex-col items-center justify-center text-white border-8 border-dashed border-white/40 m-4 rounded-3xl backdrop-blur-sm transition-all pointer-events-none";
+            overlay.innerHTML = `
+                <svg class="w-24 h-24 mb-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                <h2 class="text-4xl font-bold tracking-tight">Rilascia il file JSON qui</h2>
+                <p class="text-lg mt-2 opacity-90">I contatti verranno importati automaticamente</p>
+            `;
+            document.body.appendChild(overlay);
+
+            let dragCounter = 0; // Previene lo sfarfallio sui figli DOM
+
+            window.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                dragCounter++;
+                if (e.dataTransfer.types.includes('Files')) {
+                    overlay.classList.replace('hidden', 'flex');
+                }
+            });
+
+            window.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dragCounter--;
+                if (dragCounter === 0) {
+                    overlay.classList.replace('flex', 'hidden');
+                }
+            });
+
+            window.addEventListener('dragover', (e) => { 
+                e.preventDefault(); // Necessario per permettere il drop
+            });
+
+            window.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dragCounter = 0;
+                overlay.classList.replace('flex', 'hidden');
+                
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    if (file.name.endsWith('.json')) {
+                        // Simuliamo l'evento dell'input type="file" per riutilizzare la tua funzione
+                        const pseudoEvent = { target: { files: [file], value: '' } };
+                        importData(pseudoEvent);
+                    } else {
+                        alert('Per favore, rilascia solo file di backup con estensione .json');
+                    }
+                }
+            });
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+            updateMailtoLink();
+        }
+
+        // --- GESTIONE TABELLE E RENDER ---
+        function renderAllTables() {
+            renderSection('to');
+            renderSection('cc');
+            renderSection('bcc');
+            updateMailtoLink();
+        }
+
+        function renderSection(type) {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const tbody = document.getElementById(`body-${type}`);
+            const countEl = document.getElementById(`count-${type}`);
+            
+            // Estrazione e Filtro
+            let data = db.filter(c => c.type === type && c.status === currentTab);
+            if (query) {
+                data = data.filter(c => 
+                    (c.firstName || '').toLowerCase().includes(query) || 
+                    (c.lastName || '').toLowerCase().includes(query) || 
+                    (c.email || '').toLowerCase().includes(query) ||
+                    (c.company || '').toLowerCase().includes(query)
+                );
+            }
+
+            // Ordinamento (Solo se una colonna è attiva, altrimenti usa l'ordine del DB stabilito dal drag&drop)
+            const s = sorting[type];
+            if (s.col) {
+                data.sort((a, b) => {
+                    let valA = (a[s.col] || '').toLowerCase();
+                    let valB = (b[s.col] || '').toLowerCase();
+                    return s.asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                });
+            }
+
+            countEl.textContent = data.length;
+            tbody.innerHTML = '';
+
+            data.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50/30 cursor-move transition-colors group";
+                tr.draggable = true;
+                tr.dataset.id = c.id; // Necessario per il riordino
+                
+                // Eventi Drag & Drop
+                tr.ondragstart = (e) => {
+                    e.dataTransfer.setData("text/plain", c.id);
+                    setTimeout(() => tr.classList.add('dragging'), 0);
+                };
+                tr.ondragend = () => tr.classList.remove('dragging');
+                tr.ondragover = (e) => {
+                    e.preventDefault();
+                    tr.classList.add('drag-over');
+                };
+                tr.ondragleave = () => tr.classList.remove('drag-over');
+
+                // Abilita apertura modale con doppio click sulla riga
+                tr.ondblclick = () => { if(currentTab === 'active') editContact(c.id); };
+
+                tr.innerHTML = `
+                    <td class="px-4 py-1.5 text-mac-muted group-hover:text-mac-blue">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </td>
+                    <td class="px-4 py-1.5">${c.firstName || '-'}</td>
+                    <td class="px-4 py-1.5 font-medium">${c.lastName || '-'}</td>
+                    <td class="px-4 py-1.5 text-mac-blue">${c.email}</td>
+                    <td class="px-4 py-1.5 text-xs text-mac-muted">${c.company || '-'}</td>
+                    <td class="px-4 py-1.5 text-right">
+                        <div class="flex justify-end gap-1">
+                            ${currentTab === 'active' 
+                                ? `<button onclick="editContact('${c.id}')" class="p-1.5 rounded-md hover:bg-gray-100 text-mac-blue transition-colors" title="Modifica">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                   </button>
+                                   <button onclick="changeStatus('${c.id}', 'removed')" class="p-1.5 rounded-md hover:bg-red-50 text-mac-danger transition-colors" title="Cestina">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                   </button>`
+                                : `<button onclick="changeStatus('${c.id}', 'active')" class="p-1.5 rounded-md hover:bg-gray-100 text-mac-blue transition-colors" title="Ripristina">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                                   </button>
+                                   <button onclick="hardDelete('${c.id}')" class="p-1.5 rounded-md hover:bg-red-50 text-mac-danger transition-colors" title="Elimina Definitivamente">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                   </button>`
+                            }
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- DRAG AND DROP (Spostamento e Riordino) ---
+        function allowDrop(ev) { 
+            ev.preventDefault(); 
+        }
+
+        function drop(ev, newType) {
+            ev.preventDefault();
+            
+            // Rimuovi styling drag-over da tutti i tr
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+            const draggedId = ev.dataTransfer.getData("text/plain");
+            const draggedIndex = db.findIndex(c => c.id === draggedId);
+            
+            if (draggedIndex === -1) return;
+
+            const draggedItem = db[draggedIndex];
+            draggedItem.type = newType; // Aggiorna ruolo se spostato tra tabelle
+
+            // Determina la riga bersaglio (su quale riga ho rilasciato il mouse)
+            const targetTr = ev.target.closest('tr');
+            
+            if (targetTr && targetTr.dataset.id && targetTr.dataset.id !== draggedId) {
+                // Riordino array
+                const targetId = targetTr.dataset.id;
+                db.splice(draggedIndex, 1); // Rimuovi da posizione originale
+                const newTargetIndex = db.findIndex(c => c.id === targetId); // Ricalcola indice
+                db.splice(newTargetIndex, 0, draggedItem); // Inserisci prima del bersaglio
+            }
+
+            // Annulla l'ordinamento alfabetico per mostrare l'ordine manuale
+            sorting[newType].col = null; 
+            
+            saveData();
+            renderAllTables();
+        }
+
+        function setSort(type, col) {
+            if (sorting[type].col === col) {
+                sorting[type].asc = !sorting[type].asc;
+            } else { 
+                sorting[type].col = col; 
+                sorting[type].asc = true; 
+            }
+            renderSection(type);
+        }
+
+        // --- CRUD CONTATTI ---
+        function saveContact() {
+            const email = document.getElementById('form-email').value.trim();
+            const id = document.getElementById('form-id').value;
+
+            if (!email || !email.includes('@')) return alert("Email non valida");
+            // Check duplicati escludendo il record che stiamo modificando
+            if (db.some(c => c.email.toLowerCase() === email.toLowerCase() && c.id !== id)) {
+                return alert("Email già presente nel database!");
+            }
+
+            if (id) {
+                // Modifica esistente
+                const c = db.find(c => c.id === id);
+                if (c) {
+                    c.firstName = document.getElementById('form-name').value.trim();
+                    c.lastName = document.getElementById('form-surname').value.trim();
+                    c.email = email;
+                    c.company = document.getElementById('form-company').value.trim();
+                    c.type = document.getElementById('form-type').value;
+                }
+            } else {
+                // Nuovo Inserimento
+                db.push({
+                    id: Date.now().toString(),
+                    firstName: document.getElementById('form-name').value.trim(),
+                    lastName: document.getElementById('form-surname').value.trim(),
+                    email: email,
+                    company: document.getElementById('form-company').value.trim(),
+                    type: document.getElementById('form-type').value,
+                    status: 'active',
+                    removedAt: null
+                });
+            }
+            saveData();
+            closeModal('add-modal');
+            renderAllTables();
+        }
+
+        function editContact(id) {
+            const c = db.find(c => c.id === id);
+            if (!c) return;
+            
+            document.getElementById('form-id').value = c.id;
+            document.getElementById('form-name').value = c.firstName || '';
+            document.getElementById('form-surname').value = c.lastName || '';
+            document.getElementById('form-email').value = c.email || '';
+            document.getElementById('form-company').value = c.company || '';
+            document.getElementById('form-type').value = c.type || 'bcc';
+            
+            document.getElementById('modal-title').textContent = "Modifica Contatto";
+            openModal('add-modal');
+        }
+
+        function openNewContactModal() {
+            document.getElementById('form-id').value = '';
+            ['form-name', 'form-surname', 'form-email', 'form-company'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('form-type').value = 'bcc';
+            
+            document.getElementById('modal-title').textContent = "Nuovo Contatto";
+            openModal('add-modal');
+        }
+
+        function changeStatus(id, status) {
+            const c = db.find(c => c.id === id);
+            if(c) { 
+                c.status = status; 
+                c.removedAt = status === 'removed' ? new Date().toISOString() : null;
+                saveData(); renderAllTables(); 
+            }
+        }
+
+        function hardDelete(id) {
+            if(confirm("Eliminare definitivamente?")) {
+                db = db.filter(c => c.id !== id);
+                saveData(); renderAllTables();
+            }
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-active').className = tab === 'active' ? "px-4 py-1 text-sm font-medium rounded-md bg-white shadow-sm" : "px-4 py-1 text-sm font-medium rounded-md text-mac-muted";
+            document.getElementById('tab-removed').className = tab === 'removed' ? "px-4 py-1 text-sm font-medium rounded-md bg-white shadow-sm" : "px-4 py-1 text-sm font-medium rounded-md text-mac-muted";
+            renderAllTables();
+        }
+
+        // --- IMPORT EXCEL ---
+        function processExcel() {
+            const text = document.getElementById('excel-paste-area').value.trim();
+            if (!text) return closeModal('excel-modal');
+            
+            // Usa una regex per supportare i ritorni a capo sia di Windows (\r\n) che di Mac/Linux (\n)
+            const rows = text.split(/\r?\n/);
+            let added = 0;
+
+            rows.forEach(row => {
+                if (!row.trim()) return; // Ignora le righe vuote
+                
+                const cols = row.split('\t').map(c => c.trim());
+                // Verifica l'email in modo più accurato
+                const email = cols.find(c => c.includes('@') && c.includes('.'));
+                
+                // Evita crash se un contatto esistente non ha la proprietà email valorizzata (database sporco)
+                if (email && !db.some(c => c.email && c.email.toLowerCase() === email.toLowerCase())) {
+                    db.push({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                        firstName: cols[0] && cols[0] !== email ? cols[0] : '', 
+                        lastName: cols[1] && cols[1] !== email ? cols[1] : '', 
+                        email: email, 
+                        company: cols[3] && cols[3] !== email ? cols[3] : '',
+                        type: 'bcc', 
+                        status: 'active', 
+                        removedAt: null
+                    });
+                    added++;
+                }
+            });
+            saveData(); 
+            renderAllTables(); 
+            closeModal('excel-modal');
+            document.getElementById('excel-paste-area').value = '';
+            alert(`Importati ${added} nuovi contatti.`);
+        }
+
+        // --- MAILTO GENERATOR ---
+        function updateMailtoLink() {
+            const active = db.filter(c => c.status === 'active');
+            const to = active.filter(c => c.type === 'to').map(c => c.email).join(',');
+            const cc = active.filter(c => c.type === 'cc').map(c => c.email).join(',');
+            const bcc = active.filter(c => c.type === 'bcc').map(c => c.email).join(',');
+            
+            const subject = document.getElementById('mail-subject').value.trim();
+            const body = document.getElementById('mail-body').value.trim();
+            
+            let mailto = `mailto:${to}`;
+            const params = new URLSearchParams();
+            
+            if (cc) params.set('cc', cc);
+            if (bcc) params.set('bcc', bcc);
+            if (subject) params.set('subject', subject);
+            if (body) params.set('body', body);
+            
+            const pStr = params.toString().replace(/\+/g, '%20');
+            if (pStr) mailto += `?${pStr}`;
+            
+            document.getElementById('mailto-output').value = active.length ? mailto : 'Nessun destinatario attivo.';
+        }
+
+        function copyLink() {
+            const out = document.getElementById('mailto-output');
+            out.select(); document.execCommand('copy');
+            const b = document.getElementById('btn-copy'); 
+            b.textContent = "Copiato!";
+            setTimeout(() => b.textContent = "Copia Link", 2000);
+        }
+
+        function openMail() { 
+            const l = document.getElementById('mailto-output').value;
+            if(!l.startsWith('Nessun')) window.location.href = l; 
+        }
+
+        // --- EXPORT / IMPORT ---
+        function exportData() {
+            // Creiamo un pacchetto che include sia i contatti che i testi correnti
+            const exportPkg = {
+                contacts: db,
+                draft: {
+                    subject: document.getElementById('mail-subject').value,
+                    body: document.getElementById('mail-body').value
+                }
+            };
+            const blob = new Blob([JSON.stringify(exportPkg, null, 2)], { type: "application/json" });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `backup_mailmanager_${new Date().toISOString().split('T')[0]}.json`; a.click();
+        }
+
+        function importData(e) {
+            const f = e.target.files[0]; if (!f) return;
+            const r = new FileReader();
+            r.onload = (ev) => { 
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    // Supporto sia per il vecchio formato (array) che per il nuovo (oggetto con draft)
+                    if (Array.isArray(data)) {
+                        db = data;
+                    } else {
+                        db = data.contacts || [];
+                        if (data.draft) {
+                            document.getElementById('mail-subject').value = data.draft.subject || '';
+                            document.getElementById('mail-body').value = data.draft.body || '';
+                        }
+                    }
+                    saveData(); 
+                    renderAllTables(); 
+                    updateMailtoLink();
+                } catch(err) {
+                    alert("Errore nel caricamento del file JSON.");
+                }
+            };
+            r.readAsText(f);
+            e.target.value = '';
+        }
+
+        function exportExcel() {
+            const activeDb = db.filter(c => c.status === 'active');
+            if (activeDb.length === 0) return alert("Nessun dato da esportare.");
+
+            const template = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><meta charset="UTF-8"></head>
+                <body>
+                    <table border="1">
+                        <thead>
+                            <tr style="background-color: #007aff; color: white; font-weight: bold;">
+                                <th>Tipo</th><th>Nome</th><th>Cognome</th><th>Email</th><th>Società/Funzione</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${activeDb.map(c => `
+                                <tr>
+                                    <td>${c.type.toUpperCase()}</td>
+                                    <td>${c.firstName || ""}</td>
+                                    <td>${c.lastName || ""}</td>
+                                    <td>${c.email}</td>
+                                    <td>${c.company || ""}</td>
+                                </tr>`).join('')}
+                        </tbody>
+                    </table>
+                </body>
+                </html>`;
+
+            const blob = new Blob([template], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            // Usiamo .xls perché il contenuto è un XML Office-compliant che Excel riconosce nativamente
+            a.download = `destinatari_${new Date().toISOString().split('T')[0]}.xls`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Funzione di supporto per pulire i testi da caratteri non validi in XML
+        function escapeXML(str) {
+            if (!str) return "";
+            return str.toString()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
+        }
+
+        // --- UTILITY ---
+        function openModal(id) { document.getElementById(id).classList.replace('hidden', 'flex'); }
+        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
+    </script>
+</body>
+</html>
+
                         'mac-danger': '#ff3b30'
                     },
                     fontFamily: {
